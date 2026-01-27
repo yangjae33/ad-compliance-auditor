@@ -70,6 +70,9 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
     setShowProductModal(false);
     setProductSearchQuery("");
 
+    // Auto-fill title with product name
+    setTitle(product.product_name);
+
     // Auto-fill mandatory disclosure text
     const mandatoryText = `${product.payout_restrictions}
 
