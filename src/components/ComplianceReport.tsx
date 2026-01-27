@@ -10,6 +10,7 @@ interface ComplianceReportProps {
   adTitle: string;
   adContent: string;
   onReset: () => void;
+  showDecisionButtons?: boolean;
 }
 
 export default function ComplianceReport({
@@ -18,6 +19,7 @@ export default function ComplianceReport({
   adTitle,
   adContent,
   onReset,
+  showDecisionButtons = true,
 }: ComplianceReportProps) {
   const [finalDecision, setFinalDecision] = useState<"Approved" | "Rejected" | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -142,71 +144,73 @@ export default function ComplianceReport({
         </div>
 
         {/* Decision Section */}
-        <div className="border-t bg-gray-50 p-6">
-          {!finalDecision ? (
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-800 flex items-center">
-                <Clock className="w-4 h-4 mr-2" />
-                Human-in-the-Loop: 최종 결정 필요
-              </h4>
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleApprove}
-                  disabled={isSending}
-                  className="flex-1 py-3 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50"
-                >
-                  {isSending ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                      </svg>
-                      메일 발송 중...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      승인 및 메일 발송
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handleReject}
-                  disabled={isSending}
-                  className="flex-1 py-3 px-4 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center disabled:opacity-50"
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  거부
-                </button>
+        {showDecisionButtons && (
+          <div className="border-t bg-gray-50 p-6">
+            {!finalDecision ? (
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-800 flex items-center">
+                  <Clock className="w-4 h-4 mr-2" />
+                  Human-in-the-Loop: 최종 결정 필요
+                </h4>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={handleApprove}
+                    disabled={isSending}
+                    className="flex-1 py-3 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50"
+                  >
+                    {isSending ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        메일 발송 중...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        승인 및 메일 발송
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleReject}
+                    disabled={isSending}
+                    className="flex-1 py-3 px-4 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center disabled:opacity-50"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    거부
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className={`text-center p-4 rounded-lg ${
-              finalDecision === "Approved" ? "bg-green-100" : "bg-red-100"
-            }`}>
-              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
-                finalDecision === "Approved" ? "bg-green-500" : "bg-red-500"
+            ) : (
+              <div className={`text-center p-4 rounded-lg ${
+                finalDecision === "Approved" ? "bg-green-100" : "bg-red-100"
               }`}>
-                {finalDecision === "Approved" ? (
-                  <CheckCircle className="w-6 h-6 text-white" />
-                ) : (
-                  <XCircle className="w-6 h-6 text-white" />
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
+                  finalDecision === "Approved" ? "bg-green-500" : "bg-red-500"
+                }`}>
+                  {finalDecision === "Approved" ? (
+                    <CheckCircle className="w-6 h-6 text-white" />
+                  ) : (
+                    <XCircle className="w-6 h-6 text-white" />
+                  )}
+                </div>
+                <h4 className={`text-lg font-semibold ${
+                  finalDecision === "Approved" ? "text-green-800" : "text-red-800"
+                }`}>
+                  {finalDecision === "Approved" ? "광고가 승인되었습니다" : "광고가 거부되었습니다"}
+                </h4>
+                {emailSent && (
+                  <p className="text-green-600 text-sm mt-2 flex items-center justify-center">
+                    <Mail className="w-4 h-4 mr-1" />
+                    승인 메일이 발송되었습니다
+                  </p>
                 )}
               </div>
-              <h4 className={`text-lg font-semibold ${
-                finalDecision === "Approved" ? "text-green-800" : "text-red-800"
-              }`}>
-                {finalDecision === "Approved" ? "광고가 승인되었습니다" : "광고가 거부되었습니다"}
-              </h4>
-              {emailSent && (
-                <p className="text-green-600 text-sm mt-2 flex items-center justify-center">
-                  <Mail className="w-4 h-4 mr-1" />
-                  승인 메일이 발송되었습니다
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex space-x-4">

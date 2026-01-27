@@ -1,5 +1,56 @@
 export type Sector = "Bank" | "Card" | "Investment" | "Insurance";
 
+// 페르소나 타입 정의
+export type PersonaType = "drafter" | "compliance_officer" | "consumer_protection";
+
+export interface Persona {
+  type: PersonaType;
+  label: string;
+  description: string;
+  color: string;
+}
+
+export const PERSONAS: Persona[] = [
+  {
+    type: "drafter",
+    label: "광고 심의 기안자",
+    description: "광고 컴플라이언스 검사를 기안하고 제출합니다",
+    color: "blue",
+  },
+  {
+    type: "compliance_officer",
+    label: "준법감시인",
+    description: "기안된 광고를 검토하고 최종 승인/반려합니다",
+    color: "purple",
+  },
+  {
+    type: "consumer_protection",
+    label: "소비자보호부",
+    description: "소비자 관점에서 광고를 검토합니다",
+    color: "teal",
+  },
+];
+
+// 기안 문서 상태
+export type DraftStatus = "pending" | "approved" | "rejected" | "review_requested";
+
+// 기안 문서 인터페이스
+export interface DraftDocument {
+  id: string;
+  title: string;
+  content: string;
+  correctedContent?: string;
+  sector: Sector;
+  status: DraftStatus;
+  analysisResult: AnalysisResult;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  reviewedBy?: string;
+  reviewComment?: string;
+  sectorFields: Record<string, boolean>;
+}
+
 export interface Regulation {
   sector: Sector;
   keywords: string[];
