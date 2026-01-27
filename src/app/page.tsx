@@ -125,6 +125,7 @@ export default function Home() {
     const suggestions: string[] = [];
     let matchedHistory = null;
 
+    // Check 1: Keyword detection
     if (regulation) {
       const contentLower = (data.title + " " + data.content).toLowerCase();
       regulation.keywords.forEach((keyword) => {
