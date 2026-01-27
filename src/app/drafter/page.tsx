@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, ArrowRight, ArrowLeft, FileEdit, Send, CheckCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, FileEdit, Send, CheckCircle } from "lucide-react";
 import SectorSelector from "@/components/SectorSelector";
 import AdInputForm, { AdFormData } from "@/components/AdInputForm";
 import AnalysisResultComponent from "@/components/AnalysisResult";

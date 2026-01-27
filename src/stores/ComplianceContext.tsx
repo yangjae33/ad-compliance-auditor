@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { DraftDocument, DraftStatus, PersonaType, Sector, AnalysisResult } from "@/data/mockData";
+import { DraftDocument, DraftStatus, PersonaType } from "@/data/mockData";
 
 interface ComplianceContextType {
   // 현재 페르소나

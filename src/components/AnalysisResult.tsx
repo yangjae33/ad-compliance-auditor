@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CheckCircle, Edit3, XCircle, FileText, History } from "lucide-react";
+import { AlertTriangle, CheckCircle, Edit3, XCircle, FileText, History, Sparkles } from "lucide-react";
 import { AnalysisResult as AnalysisResultType } from "@/data/mockData";
 
 interface AnalysisResultProps {
@@ -8,9 +8,10 @@ interface AnalysisResultProps {
   originalContent: string;
   onProceed: () => void;
   onRetry: () => void;
+  aiScore?: number;
 }
 
-export default function AnalysisResult({ result, originalContent, onProceed, onRetry }: AnalysisResultProps) {
+export default function AnalysisResult({ result, originalContent, onProceed, onRetry, aiScore }: AnalysisResultProps) {
   const getStatusConfig = () => {
     switch (result.status) {
       case "Rejected":
@@ -25,7 +26,7 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
       case "AutoCorrected":
         return {
           icon: <Edit3 className="w-8 h-8" />,
-          title: "자동 수정됨",
+          title: "수정 필요",
           bgColor: "bg-yellow-50",
           borderColor: "border-yellow-200",
           textColor: "text-yellow-700",
@@ -43,14 +44,55 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600";
+    if (score >= 50) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const getScoreBg = (score: number) => {
+    if (score >= 80) return "from-green-500 to-green-600";
+    if (score >= 50) return "from-yellow-500 to-yellow-600";
+    return "from-red-500 to-red-600";
+  };
+
   const config = getStatusConfig();
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-800">Step 3 & 4: 분석 결과</h2>
-        <p className="text-gray-600 mt-1">AI 에이전트가 광고 내용을 분석한 결과입니다.</p>
+        <h2 className="text-xl font-semibold text-gray-800">Step 3 & 4: AI 분석 결과</h2>
+        <p className="text-gray-600 mt-1">Gemini AI 에이전트가 광고 내용을 분석한 결과입니다.</p>
       </div>
+
+      {/* AI Score Card */}
+      {aiScore !== undefined && (
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-white/10 p-2 rounded-lg">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-slate-300 text-sm">AI 컴플라이언스 점수</p>
+                <p className="text-xs text-slate-400">Powered by Google Gemini</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className={`text-5xl font-bold ${getScoreColor(aiScore)}`}>{aiScore}</span>
+              <span className="text-slate-400 text-xl">/100</span>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full bg-gradient-to-r ${getScoreBg(aiScore)} transition-all duration-500`}
+                style={{ width: `${aiScore}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={`${config.bgColor} ${config.borderColor} border rounded-lg p-6`}>
         <div className="flex items-center space-x-4 mb-4">
@@ -71,7 +113,7 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
           <div className="mb-4">
             <h4 className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <AlertTriangle className="w-4 h-4 mr-1 text-red-500" />
-              발견된 위반 사항
+              발견된 위험 요소
             </h4>
             <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 bg-white p-3 rounded border">
               {result.violations.map((violation, index) => (
@@ -102,27 +144,27 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
           <div className="mb-4">
             <h4 className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <FileText className="w-4 h-4 mr-1 text-blue-500" />
-              수정 제안
+              AI 상세 피드백
             </h4>
-            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 bg-white p-3 rounded border">
+            <div className="text-sm text-gray-600 bg-white p-3 rounded border whitespace-pre-wrap">
               {result.suggestions.map((suggestion, index) => (
-                <li key={index}>{suggestion}</li>
+                <p key={index} className={index > 0 ? "mt-2" : ""}>{suggestion}</p>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
         {result.status === "AutoCorrected" && result.correctedContent && (
           <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">자동 수정된 내용</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">제안된 수정 내용</h4>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-red-50 p-3 rounded border border-red-200">
                 <p className="text-xs font-medium text-red-600 mb-1">원본</p>
                 <p className="text-sm text-gray-700 line-through">{originalContent}</p>
               </div>
               <div className="bg-green-50 p-3 rounded border border-green-200">
-                <p className="text-xs font-medium text-green-600 mb-1">수정본</p>
-                <p className="text-sm text-gray-700">{result.correctedContent}</p>
+                <p className="text-xs font-medium text-green-600 mb-1">수정 제안</p>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{result.correctedContent}</p>
               </div>
             </div>
           </div>

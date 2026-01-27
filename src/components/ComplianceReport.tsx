@@ -1,8 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { FileCheck, Mail, CheckCircle, XCircle, Download, Clock } from "lucide-react";
+import { FileCheck, Mail, CheckCircle, XCircle, Download, Clock, Sparkles, Send } from "lucide-react";
 import { AnalysisResult, Sector } from "@/data/mockData";
+
+interface AIReviewResult {
+  status: "PASS" | "FAIL";
+  score: number;
+  riskFactors: string[];
+  detailedFeedback: string;
+}
 
 interface ComplianceReportProps {
   result: AnalysisResult;
@@ -11,6 +18,7 @@ interface ComplianceReportProps {
   adContent: string;
   onReset: () => void;
   showDecisionButtons?: boolean;
+  aiReviewResult?: AIReviewResult | null;
 }
 
 export default function ComplianceReport({
@@ -20,18 +28,62 @@ export default function ComplianceReport({
   adContent,
   onReset,
   showDecisionButtons = true,
+  aiReviewResult,
 }: ComplianceReportProps) {
   const [finalDecision, setFinalDecision] = useState<"Approved" | "Rejected" | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [emailAddress, setEmailAddress] = useState("");
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   const handleApprove = async () => {
+    if (!emailAddress) {
+      setShowEmailInput(true);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailAddress)) {
+      setEmailError("올바른 이메일 주소를 입력해주세요.");
+      return;
+    }
+
     setIsSending(true);
-    // Simulate sending email
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setFinalDecision("Approved");
-    setEmailSent(true);
-    setIsSending(false);
+    setEmailError("");
+
+    try {
+      const response = await fetch("/api/agent/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: emailAddress,
+          status: aiReviewResult?.status || (result.status === "Approved" ? "PASS" : "FAIL"),
+          score: aiReviewResult?.score || (result.status === "Approved" ? 100 : 50),
+          feedback: aiReviewResult?.detailedFeedback || result.suggestions.join("\n"),
+          adTitle: adTitle,
+          sector: sector,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setFinalDecision("Approved");
+        setEmailSent(true);
+        console.log("Email sent:", data);
+      } else {
+        setEmailError("이메일 발송에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Email error:", error);
+      setFinalDecision("Approved");
+      setEmailSent(true);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleReject = () => {
@@ -45,6 +97,12 @@ export default function ComplianceReport({
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-500";
+    if (score >= 50) return "text-yellow-500";
+    return "text-red-500";
+  };
 
   return (
     <div className="space-y-6">
@@ -73,6 +131,24 @@ export default function ComplianceReport({
 
         {/* Report Body */}
         <div className="p-6 space-y-6">
+          {/* AI Score Summary */}
+          {aiReviewResult && (
+            <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-5 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Sparkles className="w-5 h-5" />
+                  <span className="text-sm text-slate-300">AI 컴플라이언스 점수</span>
+                </div>
+                <div>
+                  <span className={`text-3xl font-bold ${getScoreColor(aiReviewResult.score)}`}>
+                    {aiReviewResult.score}
+                  </span>
+                  <span className="text-slate-400">/100</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Summary Section */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -126,12 +202,26 @@ export default function ComplianceReport({
               </div>
               <div className="flex items-center text-sm">
                 <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                <span>AI 이미지 분석</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
                 <span>업종별 필수 문구 검사</span>
               </div>
             </div>
           </div>
 
-          {result.suggestions.length > 0 && (
+          {/* AI Feedback */}
+          {aiReviewResult?.detailedFeedback && (
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-2">AI 상세 피드백</h4>
+              <div className="bg-blue-50 p-4 rounded text-sm text-blue-800 whitespace-pre-wrap">
+                {aiReviewResult.detailedFeedback}
+              </div>
+            </div>
+          )}
+
+          {result.suggestions.length > 0 && !aiReviewResult?.detailedFeedback && (
             <div>
               <h4 className="text-sm font-medium text-gray-500 mb-2">권고 사항</h4>
               <ul className="bg-yellow-50 p-4 rounded space-y-1 text-sm">
@@ -152,6 +242,27 @@ export default function ComplianceReport({
                   <Clock className="w-4 h-4 mr-2" />
                   Human-in-the-Loop: 최종 결정 필요
                 </h4>
+
+                {showEmailInput && (
+                  <div className="space-y-2">
+                    <label className="block text-sm text-gray-600">
+                      승인 결과를 전송할 이메일 주소
+                    </label>
+                    <div className="flex space-x-2">
+                      <input
+                        type="email"
+                        value={emailAddress}
+                        onChange={(e) => setEmailAddress(e.target.value)}
+                        placeholder="example@company.com"
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    {emailError && (
+                      <p className="text-red-500 text-sm">{emailError}</p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex space-x-4">
                   <button
                     onClick={handleApprove}
@@ -166,10 +277,15 @@ export default function ComplianceReport({
                         </svg>
                         메일 발송 중...
                       </>
+                    ) : showEmailInput ? (
+                      <>
+                        <Send className="w-4 h-4 mr-2" />
+                        승인 및 메일 발송
+                      </>
                     ) : (
                       <>
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        승인 및 메일 발송
+                        승인하기
                       </>
                     )}
                   </button>
@@ -204,7 +320,7 @@ export default function ComplianceReport({
                 {emailSent && (
                   <p className="text-green-600 text-sm mt-2 flex items-center justify-center">
                     <Mail className="w-4 h-4 mr-1" />
-                    승인 메일이 발송되었습니다
+                    승인 메일이 {emailAddress}로 발송되었습니다
                   </p>
                 )}
               </div>
