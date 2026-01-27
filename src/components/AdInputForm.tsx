@@ -187,127 +187,29 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing, initialDat
 
       if (result.success && result.data) {
         const data = result.data;
-        const extractedProductName = data.productName || "";
 
-        // Set product name as title
-        setTitle(extractedProductName);
+        // OCR로 추출한 상품명을 제목으로 설정
+        setTitle(data.productName || "");
 
-        // PRODUCTS에서 유사한 상품 찾기
-        const findSimilarProduct = (name: string): Product | null => {
-          if (!name) return null;
+        // OCR로 추출한 텍스트만 광고 내용에 설정 (순수 텍스트 추출)
+        let contentText = "";
 
-          // 정확히 일치하는 상품 찾기
-          const exactMatch = PRODUCTS.find(p =>
-            p.product_name.toLowerCase() === name.toLowerCase()
-          );
-          if (exactMatch) return exactMatch as Product;
+        // 추출된 상세 정보가 있으면 추가
+        const details: string[] = [];
+        if (data.interestRate) details.push(`금리: ${data.interestRate}`);
+        if (data.period) details.push(`가입기간: ${data.period}`);
+        if (data.targetAudience) details.push(`가입대상: ${data.targetAudience}`);
 
-          // 부분 일치하는 상품 찾기
-          const partialMatch = PRODUCTS.find(p =>
-            p.product_name.toLowerCase().includes(name.toLowerCase()) ||
-            name.toLowerCase().includes(p.product_name.toLowerCase())
-          );
-          if (partialMatch) return partialMatch as Product;
-
-          // 키워드 기반 매칭 (적금, 예금, 청년 등)
-          const keywords = name.split(/\s+/).filter(w => w.length > 1);
-          const keywordMatch = PRODUCTS.find(p =>
-            keywords.some(kw => p.product_name.includes(kw))
-          );
-          if (keywordMatch) return keywordMatch as Product;
-
-          // 첫 번째 상품을 기본값으로 반환
-          return PRODUCTS.length > 0 ? PRODUCTS[0] as Product : null;
-        };
-
-        const similarProduct = findSimilarProduct(extractedProductName);
-
-        // OCR로 추출한 내용 기반으로 광고 내용 구성
-        const lines: string[] = [];
-
-        // 상품 기본 정보 (OCR 추출 또는 유사 상품에서 가져오기)
-        lines.push(`${productFieldLabels.product_name}: ${extractedProductName || similarProduct?.product_name || ""}`);
-
-        // 가입대상
-        if (data.targetAudience) {
-          lines.push(`${productFieldLabels.target_audience}: ${data.targetAudience}`);
-        } else if (similarProduct?.target_audience) {
-          lines.push(`${productFieldLabels.target_audience}: ${similarProduct.target_audience}`);
+        if (details.length > 0) {
+          contentText = details.join("\n") + "\n\n";
         }
 
-        // 가입기간
-        if (data.period) {
-          lines.push(`${productFieldLabels.term}: ${data.period}`);
-        } else if (similarProduct?.term) {
-          lines.push(`${productFieldLabels.term}: ${similarProduct.term}`);
-        }
-
-        // 저축한도
-        if (similarProduct?.savings_limit) {
-          lines.push(`${productFieldLabels.savings_limit}: ${similarProduct.savings_limit}`);
-        }
-
-        // 이자지급방식
-        if (similarProduct?.interest_payment_method) {
-          lines.push(`${productFieldLabels.interest_payment_method}: ${similarProduct.interest_payment_method}`);
-        }
-
-        // 중도해지
-        if (similarProduct?.partial_withdrawal_allowed) {
-          lines.push(`${productFieldLabels.partial_withdrawal_allowed}: ${similarProduct.partial_withdrawal_allowed}`);
-        }
-
-        // 금리 정보
-        if (data.interestRate) {
-          lines.push(`금리: ${data.interestRate}`);
-        } else if (similarProduct?.interest_rates) {
-          if (similarProduct.interest_rates.base_rate) {
-            lines.push(`${productFieldLabels.base_rate}: ${similarProduct.interest_rates.base_rate}`);
-          }
-          if (similarProduct.interest_rates.max_rate) {
-            lines.push(`${productFieldLabels.max_rate}: ${similarProduct.interest_rates.max_rate}`);
-          }
-        }
-
-        // 공동명의/재예치
-        if (similarProduct?.joint_name_allowed !== undefined) {
-          lines.push(`${productFieldLabels.joint_name_allowed}: ${similarProduct.joint_name_allowed ? "가능" : "불가"}`);
-        }
-        if (similarProduct?.reinvestment_allowed !== undefined) {
-          lines.push(`${productFieldLabels.reinvestment_allowed}: ${similarProduct.reinvestment_allowed ? "가능" : "불가"}`);
-        }
-
-        // OCR로 추출한 광고 문구
+        // OCR로 추출한 텍스트 추가
         if (data.description || data.extractedText) {
-          lines.push("");
-          lines.push("【광고 문구】");
-          lines.push(data.description || data.extractedText);
+          contentText += data.description || data.extractedText;
         }
 
-        // 필수 고지사항 (유사 상품에서 가져오기)
-        if (similarProduct) {
-          lines.push("");
-          lines.push("【필수 고지사항】");
-          if (similarProduct.payout_restrictions) {
-            lines.push(`${productFieldLabels.payout_restrictions}: ${similarProduct.payout_restrictions}`);
-          }
-          if (similarProduct.data_access_right) {
-            lines.push(`${productFieldLabels.data_access_right}: ${similarProduct.data_access_right}`);
-          }
-          if (similarProduct.important_notes) {
-            lines.push(`${productFieldLabels.important_notes}: ${similarProduct.important_notes}`);
-          }
-          if (similarProduct.deposit_protection) {
-            lines.push(`${productFieldLabels.deposit_protection}: ${similarProduct.deposit_protection}`);
-          }
-        }
-
-        setContent(lines.join("\n"));
-
-        // 유사 상품 선택 상태 업데이트
-        if (similarProduct) {
-          setSelectedProduct(similarProduct);
-        }
+        setContent(contentText);
 
         if (result.isMock) {
           console.log("Using mock data for auto-fill");

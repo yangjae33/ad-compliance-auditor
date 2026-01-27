@@ -15,6 +15,7 @@ import {
   REGULATIONS,
   HISTORY_RAG,
   SECTOR_GUIDELINES,
+  PRODUCTS,
 } from "@/data/mockData";
 
 type Step = "sector" | "input" | "analysis" | "report" | "submitted";
@@ -293,19 +294,93 @@ export default function DrafterPage() {
       matchedHistory = historyMatch;
     }
 
+    // 유사 상품 찾기 함수
+    const findSimilarProduct = (title: string) => {
+      if (!title) return null;
+      const titleLower = title.toLowerCase();
+
+      // 정확히 일치
+      const exactMatch = PRODUCTS.find(p =>
+        p.product_name.toLowerCase() === titleLower
+      );
+      if (exactMatch) return exactMatch;
+
+      // 부분 일치
+      const partialMatch = PRODUCTS.find(p =>
+        p.product_name.toLowerCase().includes(titleLower) ||
+        titleLower.includes(p.product_name.toLowerCase())
+      );
+      if (partialMatch) return partialMatch;
+
+      // 키워드 매칭
+      const keywords = title.split(/\s+/).filter(w => w.length > 1);
+      const keywordMatch = PRODUCTS.find(p =>
+        keywords.some(kw => p.product_name.includes(kw))
+      );
+      if (keywordMatch) return keywordMatch;
+
+      return PRODUCTS.length > 0 ? PRODUCTS[0] : null;
+    };
+
+    // 유사 상품에서 누락된 필수 항목 찾기
+    const similarProduct = findSimilarProduct(data.title);
+    const missingFields: string[] = [];
+
+    if (similarProduct) {
+      // 필수 고지사항 체크
+      const fieldChecks = [
+        { field: "예금자보호", pattern: /예금자보호법|보호됩니다/i, value: similarProduct.deposit_protection },
+        { field: "지급제한사항", pattern: /압류|가압류|질권/i, value: similarProduct.payout_restrictions },
+        { field: "자료열람권", pattern: /자료.*열람|열람.*요구/i, value: similarProduct.data_access_right },
+        { field: "유의사항", pattern: /상품설명서.*참조|고객.*센터/i, value: similarProduct.important_notes },
+      ];
+
+      fieldChecks.forEach(({ field, pattern, value }) => {
+        if (value && !pattern.test(fullContent)) {
+          missingFields.push(`${field}: ${value}`);
+        }
+      });
+
+      // 기본 정보 체크
+      if (similarProduct.target_audience && !contentLower.includes("가입대상") && !contentLower.includes("대상")) {
+        missingFields.push(`가입대상: ${similarProduct.target_audience}`);
+      }
+      if (similarProduct.term && !contentLower.includes("가입기간") && !contentLower.includes("기간")) {
+        missingFields.push(`가입기간: ${similarProduct.term}`);
+      }
+      if (similarProduct.savings_limit && !contentLower.includes("저축한도") && !contentLower.includes("한도")) {
+        missingFields.push(`저축한도: ${similarProduct.savings_limit}`);
+      }
+      if (similarProduct.interest_rates) {
+        if (similarProduct.interest_rates.base_rate && !contentLower.includes("기본금리")) {
+          missingFields.push(`기본금리: ${similarProduct.interest_rates.base_rate}`);
+        }
+        if (similarProduct.interest_rates.max_rate && !contentLower.includes("최고금리")) {
+          missingFields.push(`최고금리: ${similarProduct.interest_rates.max_rate}`);
+        }
+      }
+    }
+
     let status: AnalysisResult["status"];
     let riskLevel: AnalysisResult["riskLevel"];
     let correctedContent: string | undefined;
+
+    // 누락된 필수 항목이 있으면 suggestions에 추가하고 조건부 승인
+    if (missingFields.length > 0) {
+      suggestions.push(`※ AI 제안: 유사 상품(${similarProduct?.product_name}) 기준 누락 항목 발견`);
+    }
 
     if (violations.length > 0 && matchedHistory) {
       // 심각한 위반 + 과거 거부 이력 = 반려
       status = "반려";
       riskLevel = "High";
-    } else if (violations.length > 0 || suggestions.length > 0) {
+    } else if (violations.length > 0 || suggestions.length > 0 || missingFields.length > 0) {
       // 위반 사항 또는 개선 필요 = 조건부 승인
       status = "조건부 승인";
       riskLevel = violations.length > 0 ? "High" : "Low";
       correctedContent = data.content;
+
+      // 금지 키워드 처리
       if (regulation && violations.length > 0) {
         regulation.keywords.forEach((keyword) => {
           const regex = new RegExp(keyword, "gi");
@@ -323,7 +398,17 @@ export default function DrafterPage() {
           }
         });
       }
-      if (suggestions.length > 0 && !violations.length) {
+
+      // AI 제안: 유사 상품 기준 누락 필드 추가
+      if (missingFields.length > 0) {
+        correctedContent += "\n\n【AI 제안 - 추가 권장 항목】";
+        missingFields.forEach(field => {
+          correctedContent += `\n${field}`;
+        });
+      }
+
+      // 기타 권장사항
+      if (suggestions.length > 0 && !violations.length && missingFields.length === 0) {
         correctedContent = data.content + `\n\n※ 권장사항:\n${suggestions.slice(0, 3).join("\n")}`;
       }
     } else {
