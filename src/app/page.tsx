@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Pen, FileEdit, Scale, Users, ArrowRight, Bell } from "lucide-react";
+import { Eye, FileEdit, Scale, Users, ArrowRight, Bell } from "lucide-react";
 import { useCompliance } from "@/stores/ComplianceContext";
 import { PERSONAS, PersonaType } from "@/data/mockData";
 
@@ -61,10 +61,10 @@ export default function Home() {
         {/* Header */}
         <header className="text-center mb-16">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-2xl shadow-blue-500/25 mb-6">
-            <Pen className="w-10 h-10 text-white" />
+            <Eye className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-            Blue Pen
+            SOLens
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
             AI 기반 금융 광고 컴플라이언스 검사 시스템
@@ -151,7 +151,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-slate-500 mt-12">
-          <p>Blue Pen v1.0 - Multi-Persona System</p>
+          <p>SOLens v1.0 - Multi-Persona System</p>
           <p className="mt-1">AI Agent 기반 금융 광고 심의 자동화 플랫폼</p>
         </footer>
       </div>

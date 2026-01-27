@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 <body>
   <div class="container">
     <div class="header">
-      <h1 style="margin: 0;">Blue Pen</h1>
+      <h1 style="margin: 0;">SOLens</h1>
       <p style="margin: 10px 0 0 0; opacity: 0.9;">광고 컴플라이언스 검토 결과</p>
     </div>
     <div class="content">
@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
       </div>
     </div>
     <div class="footer">
-      <p style="margin: 0;">이 메일은 Blue Pen에서 자동으로 발송되었습니다.</p>
-      <p style="margin: 10px 0 0 0; opacity: 0.7; font-size: 12px;">© 2024 Blue Pen</p>
+      <p style="margin: 0;">이 메일은 SOLens에서 자동으로 발송되었습니다.</p>
+      <p style="margin: 10px 0 0 0; opacity: 0.7; font-size: 12px;">© 2024 SOLens</p>
     </div>
   </div>
 </body>
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       console.log("EMAIL NOTIFICATION (Demo Mode - SMTP not configured)");
       console.log("=".repeat(60));
       console.log(`To: ${to}`);
-      console.log(`Subject: [Blue Pen] 광고 검토 결과 - ${status}`);
+      console.log(`Subject: [SOLens] 광고 검토 결과 - ${status}`);
       console.log(`Status: ${status}`);
       console.log(`Score: ${score}`);
       console.log(`Feedback: ${feedback}`);
@@ -106,9 +106,9 @@ export async function POST(request: NextRequest) {
 
     // Send email
     const info = await transporter.sendMail({
-      from: `"Blue Pen" <${smtpUser}>`,
+      from: `"SOLens" <${smtpUser}>`,
       to: to,
-      subject: `[Blue Pen] 광고 검토 결과 - ${status === "PASS" ? "승인" : "거부"}`,
+      subject: `[SOLens] 광고 검토 결과 - ${status === "PASS" ? "승인" : "거부"}`,
       html: emailContent,
     });
 

@@ -1117,3 +1117,454 @@ export const PRODUCTS = [
       "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
     }
   ];
+
+// 카드 상품 DB
+export const CARD_PRODUCTS = [
+  {
+    id: "SC-001",
+    product_name: "신한카드 Deep Dream",
+    card_type: "신용카드",
+    annual_fee: "국내전용 15,000원 / 해외겸용 18,000원",
+    target_audience: "20~40대 디지털 라이프 고객",
+    main_benefits: [
+      "온라인 쇼핑 5% 할인",
+      "스트리밍 서비스 10% 할인",
+      "배달앱 5% 할인"
+    ],
+    benefit_limit: "월 최대 1만원",
+    minimum_usage: "전월 30만원 이상 이용 시",
+    interest_rate: {
+      card_loan: "연 5.9% ~ 19.9%",
+      cash_advance: "연 10.0% ~ 23.0%",
+      overdue: "연 24.0%"
+    },
+    important_notes: "신용카드 발급은 개인 신용도에 따라 발급이 제한될 수 있습니다. 카드 이용대금과 이자는 매월 결제일에 상환해야 합니다."
+  },
+  {
+    id: "SC-002",
+    product_name: "신한카드 Mr.Life",
+    card_type: "신용카드",
+    annual_fee: "국내전용 12,000원 / 해외겸용 15,000원",
+    target_audience: "생활밀착형 혜택을 원하는 30~50대",
+    main_benefits: [
+      "대형마트 5% 할인",
+      "주유 리터당 60원 할인",
+      "통신비 5% 할인",
+      "공과금 자동이체 1% 할인"
+    ],
+    benefit_limit: "월 최대 15,000원",
+    minimum_usage: "전월 40만원 이상 이용 시",
+    interest_rate: {
+      card_loan: "연 5.9% ~ 19.9%",
+      cash_advance: "연 10.0% ~ 23.0%",
+      overdue: "연 24.0%"
+    },
+    important_notes: "할인 혜택은 이용 조건에 따라 달라질 수 있습니다. 자세한 내용은 상품설명서를 참조하세요."
+  },
+  {
+    id: "SC-003",
+    product_name: "신한카드 taptap O",
+    card_type: "신용카드",
+    annual_fee: "없음 (연회비 무료)",
+    target_audience: "간편결제 선호 고객",
+    main_benefits: [
+      "간편결제 7% 적립",
+      "온라인 결제 5% 적립",
+      "교통 5% 적립"
+    ],
+    benefit_limit: "월 최대 5,000포인트",
+    minimum_usage: "없음",
+    interest_rate: {
+      card_loan: "연 6.5% ~ 19.9%",
+      cash_advance: "연 11.0% ~ 23.0%",
+      overdue: "연 24.0%"
+    },
+    important_notes: "적립된 포인트는 1포인트 = 1원으로 사용 가능합니다. 포인트 유효기간은 적립일로부터 5년입니다."
+  },
+  {
+    id: "SC-004",
+    product_name: "신한카드 The CLASSIC",
+    card_type: "신용카드 (프리미엄)",
+    annual_fee: "100,000원",
+    target_audience: "프리미엄 혜택을 원하는 고소득 고객",
+    main_benefits: [
+      "공항 라운지 무료 이용 (연 4회)",
+      "발렛파킹 서비스 (연 12회)",
+      "호텔 할인 15%",
+      "골프장 그린피 할인"
+    ],
+    benefit_limit: "서비스별 상이",
+    minimum_usage: "전월 100만원 이상 이용 시",
+    interest_rate: {
+      card_loan: "연 4.9% ~ 17.9%",
+      cash_advance: "연 9.0% ~ 21.0%",
+      overdue: "연 24.0%"
+    },
+    important_notes: "프리미엄 서비스는 사전 예약이 필요할 수 있습니다. 서비스 제공 업체 사정에 따라 변경될 수 있습니다."
+  },
+  {
+    id: "SC-005",
+    product_name: "신한카드 체크 SOL",
+    card_type: "체크카드",
+    annual_fee: "없음",
+    target_audience: "신한은행 계좌 보유 고객",
+    main_benefits: [
+      "편의점 5% 할인",
+      "커피전문점 10% 할인",
+      "대중교통 5% 적립"
+    ],
+    benefit_limit: "월 최대 5,000원",
+    minimum_usage: "없음",
+    interest_rate: {
+      card_loan: "해당없음",
+      cash_advance: "해당없음",
+      overdue: "해당없음"
+    },
+    important_notes: "체크카드는 연결된 계좌 잔액 범위 내에서 결제됩니다. 잔액 부족 시 결제가 거절될 수 있습니다."
+  },
+  {
+    id: "SC-006",
+    product_name: "신한카드 GREAT",
+    card_type: "신용카드",
+    annual_fee: "국내전용 30,000원 / 해외겸용 35,000원",
+    target_audience: "해외 이용이 많은 고객",
+    main_benefits: [
+      "해외 가맹점 3% 캐시백",
+      "해외 직구 5% 할인",
+      "면세점 7% 할인",
+      "환전 수수료 50% 우대"
+    ],
+    benefit_limit: "월 최대 30,000원",
+    minimum_usage: "전월 50만원 이상 이용 시",
+    interest_rate: {
+      card_loan: "연 5.5% ~ 18.9%",
+      cash_advance: "연 10.0% ~ 22.0%",
+      overdue: "연 24.0%"
+    },
+    important_notes: "해외 이용 시 국제브랜드 수수료가 별도 부과될 수 있습니다. 환율 변동에 따라 결제금액이 달라질 수 있습니다."
+  },
+  {
+    id: "SC-007",
+    product_name: "신한카드 Lady Classic",
+    card_type: "신용카드",
+    annual_fee: "국내전용 20,000원 / 해외겸용 25,000원",
+    target_audience: "20~40대 여성 고객",
+    main_benefits: [
+      "뷰티/화장품 10% 할인",
+      "백화점 5% 할인",
+      "헬스/필라테스 10% 할인",
+      "카페 5% 할인"
+    ],
+    benefit_limit: "월 최대 20,000원",
+    minimum_usage: "전월 40만원 이상 이용 시",
+    interest_rate: {
+      card_loan: "연 5.9% ~ 19.9%",
+      cash_advance: "연 10.0% ~ 23.0%",
+      overdue: "연 24.0%"
+    },
+    important_notes: "할인 가맹점은 변경될 수 있습니다. 최신 가맹점 정보는 홈페이지에서 확인하세요."
+  },
+  {
+    id: "SC-008",
+    product_name: "신한카드 S-Line",
+    card_type: "신용카드",
+    annual_fee: "국내전용 10,000원",
+    target_audience: "사회초년생, 대학생",
+    main_benefits: [
+      "영화 50% 할인 (월 2회)",
+      "편의점 5% 할인",
+      "대중교통 10% 적립"
+    ],
+    benefit_limit: "월 최대 10,000원",
+    minimum_usage: "전월 20만원 이상 이용 시",
+    interest_rate: {
+      card_loan: "연 7.9% ~ 19.9%",
+      cash_advance: "연 12.0% ~ 23.0%",
+      overdue: "연 24.0%"
+    },
+    important_notes: "첫 해 연회비 면제 혜택이 제공됩니다. 영화 할인은 제휴 극장에서만 적용됩니다."
+  }
+];
+
+// 증권 상품 DB
+export const INVESTMENT_PRODUCTS = [
+  {
+    id: "SI-001",
+    product_name: "신한 글로벌 AI 테크 펀드",
+    product_type: "주식형 펀드",
+    risk_level: "높음 (5등급 중 2등급)",
+    investment_target: "글로벌 AI/반도체/클라우드 관련 기업",
+    minimum_investment: "10,000원",
+    management_fee: "연 1.5%",
+    sales_fee: "선취 1.0% (온라인 0.5%)",
+    redemption_period: "환매청구일 + 3영업일",
+    past_performance: {
+      "1년": "+32.5%",
+      "3년": "+87.2%",
+      "설정이후": "+124.8%"
+    },
+    important_notes: "이 금융상품은 예금자보호법에 따라 보호되지 않습니다. 투자원금의 손실이 발생할 수 있으며, 그 손실은 투자자에게 귀속됩니다. 과거의 운용실적이 미래의 수익을 보장하지 않습니다."
+  },
+  {
+    id: "SI-002",
+    product_name: "신한 코리아 밸류업 펀드",
+    product_type: "주식형 펀드",
+    risk_level: "높음 (5등급 중 2등급)",
+    investment_target: "국내 저평가 우량주, 밸류업 프로그램 참여 기업",
+    minimum_investment: "10,000원",
+    management_fee: "연 1.2%",
+    sales_fee: "선취 0.8% (온라인 0.3%)",
+    redemption_period: "환매청구일 + 3영업일",
+    past_performance: {
+      "1년": "+18.7%",
+      "3년": "+42.3%",
+      "설정이후": "+65.1%"
+    },
+    important_notes: "이 금융상품은 예금자보호법에 따라 보호되지 않습니다. 투자원금의 손실이 발생할 수 있으며, 그 손실은 투자자에게 귀속됩니다."
+  },
+  {
+    id: "SI-003",
+    product_name: "신한 글로벌 배당 인컴 펀드",
+    product_type: "혼합형 펀드",
+    risk_level: "보통 (5등급 중 3등급)",
+    investment_target: "글로벌 고배당 주식 및 채권",
+    minimum_investment: "100,000원",
+    management_fee: "연 1.0%",
+    sales_fee: "선취 0.5%",
+    redemption_period: "환매청구일 + 4영업일",
+    past_performance: {
+      "1년": "+8.2%",
+      "3년": "+21.5%",
+      "설정이후": "+38.7%"
+    },
+    dividend_frequency: "분기배당",
+    important_notes: "배당금은 운용성과에 따라 변동될 수 있습니다. 외화 자산 투자로 인한 환율 변동 위험이 있습니다."
+  },
+  {
+    id: "SI-004",
+    product_name: "신한 국공채 안정형 펀드",
+    product_type: "채권형 펀드",
+    risk_level: "낮음 (5등급 중 4등급)",
+    investment_target: "국채, 지방채, 특수채 등 우량 채권",
+    minimum_investment: "10,000원",
+    management_fee: "연 0.4%",
+    sales_fee: "없음",
+    redemption_period: "환매청구일 + 2영업일",
+    past_performance: {
+      "1년": "+4.1%",
+      "3년": "+9.8%",
+      "설정이후": "+18.2%"
+    },
+    important_notes: "채권형 펀드도 금리 변동에 따라 원금 손실이 발생할 수 있습니다. 이 금융상품은 예금자보호법에 따라 보호되지 않습니다."
+  },
+  {
+    id: "SI-005",
+    product_name: "신한 MMF (법인용)",
+    product_type: "MMF",
+    risk_level: "매우 낮음 (5등급 중 5등급)",
+    investment_target: "단기 금융상품 (CD, CP, 콜론 등)",
+    minimum_investment: "1,000,000원",
+    management_fee: "연 0.2%",
+    sales_fee: "없음",
+    redemption_period: "당일 환매 가능 (15시 이전)",
+    past_performance: {
+      "1년": "+3.5%",
+      "3년": "+8.2%"
+    },
+    important_notes: "MMF는 실적배당상품으로 예금자보호법에 따라 보호되지 않습니다. 다만, 원금손실 위험이 매우 낮은 상품입니다."
+  },
+  {
+    id: "SI-006",
+    product_name: "신한 TDF 2045",
+    product_type: "타겟데이트펀드 (TDF)",
+    risk_level: "보통 (5등급 중 3등급)",
+    investment_target: "글로벌 주식/채권 (은퇴시점에 맞춰 자동 조정)",
+    minimum_investment: "10,000원",
+    management_fee: "연 0.8%",
+    sales_fee: "없음 (연금저축 전용)",
+    redemption_period: "환매청구일 + 4영업일",
+    target_date: "2045년",
+    past_performance: {
+      "1년": "+12.3%",
+      "3년": "+28.7%",
+      "설정이후": "+45.2%"
+    },
+    important_notes: "은퇴시점이 가까워질수록 채권 비중이 자동으로 높아집니다. 연금저축계좌에서 가입 시 세제혜택을 받을 수 있습니다."
+  },
+  {
+    id: "SI-007",
+    product_name: "신한 S&P500 인덱스 펀드",
+    product_type: "인덱스 펀드",
+    risk_level: "높음 (5등급 중 2등급)",
+    investment_target: "미국 S&P500 지수 추종",
+    minimum_investment: "10,000원",
+    management_fee: "연 0.3%",
+    sales_fee: "없음",
+    redemption_period: "환매청구일 + 4영업일",
+    past_performance: {
+      "1년": "+24.8%",
+      "3년": "+52.1%",
+      "설정이후": "+98.5%"
+    },
+    important_notes: "환헤지를 하지 않아 환율 변동에 따른 손익이 발생할 수 있습니다. 미국 주식시장 변동에 따라 원금 손실이 발생할 수 있습니다."
+  },
+  {
+    id: "SI-008",
+    product_name: "신한 ELS 제2024-123호",
+    product_type: "주가연계증권 (ELS)",
+    risk_level: "높음 (5등급 중 2등급)",
+    investment_target: "삼성전자, SK하이닉스 (2종목 연계)",
+    minimum_investment: "1,000,000원",
+    management_fee: "없음",
+    sales_fee: "없음",
+    maturity: "3년 (6개월 단위 조기상환 가능)",
+    expected_return: "연 8.5% (조건 충족 시)",
+    knock_in_barrier: "기초자산 50% 하락 시",
+    important_notes: "원금비보장 상품입니다. 기초자산 가격이 녹인 배리어 이하로 하락할 경우 원금 손실이 발생할 수 있습니다. 조기상환 조건을 충족하지 못하면 만기까지 투자금이 묶일 수 있습니다."
+  }
+];
+
+// 라이프 (보험) 상품 DB
+export const LIFE_PRODUCTS = [
+  {
+    id: "SL-001",
+    product_name: "신한 무배당 간편정기보험",
+    product_type: "정기보험",
+    insurance_period: "10년/20년/30년 만기",
+    payment_period: "전기납, 10년납, 20년납",
+    target_audience: "간편한 심사로 사망보장을 원하는 고객",
+    main_coverage: [
+      "사망보험금 최대 3억원",
+      "재해사망 추가보장",
+      "고도장해 보험금"
+    ],
+    monthly_premium_example: "40세 남성, 1억원 보장, 20년납 기준 약 35,000원",
+    underwriting: "간편심사 (3가지 고지사항)",
+    important_notes: "보장 내용은 약관에 따라 달라질 수 있습니다. 해약 시 해약환급금이 납입보험료보다 적을 수 있습니다. 계약 체결 전 상품설명서 및 약관을 반드시 확인하시기 바랍니다."
+  },
+  {
+    id: "SL-002",
+    product_name: "신한 무배당 종신보험 (무해약환급금형)",
+    product_type: "종신보험",
+    insurance_period: "종신",
+    payment_period: "10년납, 15년납, 20년납, 30년납",
+    target_audience: "평생 사망보장과 상속 준비를 원하는 고객",
+    main_coverage: [
+      "사망보험금 최대 10억원",
+      "암/뇌/심장 진단 시 보험료 납입면제",
+      "장해연금 선택 가능"
+    ],
+    monthly_premium_example: "35세 남성, 1억원 보장, 20년납 기준 약 180,000원",
+    underwriting: "표준심사",
+    important_notes: "무해약환급금형은 납입기간 중 해약 시 환급금이 없습니다. 납입완료 후에도 해약환급금이 일반형 대비 적습니다."
+  },
+  {
+    id: "SL-003",
+    product_name: "신한 무배당 건강보험 플러스",
+    product_type: "건강보험 (실손형)",
+    insurance_period: "15년 갱신형",
+    payment_period: "전기납",
+    target_audience: "의료비 보장을 원하는 모든 연령대",
+    main_coverage: [
+      "입원의료비 (급여 90%, 비급여 80%)",
+      "통원의료비 (외래/처방조제비)",
+      "암/뇌혈관/심장질환 진단비",
+      "수술비 특약"
+    ],
+    monthly_premium_example: "30세 남성 기준 약 45,000원 (특약 포함)",
+    underwriting: "표준심사",
+    important_notes: "실손의료비는 실제 부담한 의료비를 보상하며, 다른 실손보험과 중복 가입 시 비례보상됩니다. 15년마다 갱신되며 갱신 시 보험료가 인상될 수 있습니다."
+  },
+  {
+    id: "SL-004",
+    product_name: "신한 무배당 어린이보험 꿈나무",
+    product_type: "어린이보험",
+    insurance_period: "30세/100세 만기",
+    payment_period: "10년납, 15년납, 20년납",
+    target_audience: "0세~15세 자녀를 둔 부모",
+    main_coverage: [
+      "소아암/백혈병 진단비 5,000만원",
+      "입원일당 5만원",
+      "골절/화상 진단비",
+      "학교폭력 피해 보장",
+      "자녀배상책임 1억원"
+    ],
+    monthly_premium_example: "5세 남아, 100세 만기, 20년납 기준 약 85,000원",
+    underwriting: "간편심사",
+    important_notes: "태아 가입 시 출생 후 선천이상 보장이 가능합니다. 보장 내용은 가입 시 선택한 특약에 따라 달라집니다."
+  },
+  {
+    id: "SL-005",
+    product_name: "신한 무배당 연금보험 (공시이율형)",
+    product_type: "연금보험",
+    insurance_period: "종신연금/확정연금 선택",
+    payment_period: "5년납, 10년납, 20년납, 일시납",
+    target_audience: "노후 준비를 원하는 30~50대",
+    main_coverage: [
+      "연금개시 후 종신 또는 확정기간 연금 지급",
+      "사망 시 유족연금 지급",
+      "연금개시 전 사망 시 기납입보험료 환급"
+    ],
+    monthly_premium_example: "40세, 20년납, 월 50만원 납입 시 65세부터 월 약 75만원 수령 (예시)",
+    interest_rate: "공시이율 연 3.5% (2024년 1월 기준, 변동)",
+    important_notes: "공시이율은 매월 변동되며, 최저보증이율(연 1.0%)이 적용됩니다. 연금 수령액은 납입보험료, 적립기간, 공시이율에 따라 달라집니다. 중도해약 시 원금손실이 발생할 수 있습니다."
+  },
+  {
+    id: "SL-006",
+    product_name: "신한 무배당 변액유니버셜종신보험",
+    product_type: "변액종신보험",
+    insurance_period: "종신",
+    payment_period: "10년납, 15년납, 20년납",
+    target_audience: "사망보장과 투자를 동시에 원하는 고객",
+    main_coverage: [
+      "사망보험금 (기본보험금 + 변액보험금)",
+      "펀드 선택 운용 (주식형/채권형/혼합형)",
+      "추가납입/중도인출 가능"
+    ],
+    monthly_premium_example: "35세 남성, 기본보험금 1억원, 20년납 기준 약 250,000원",
+    fund_options: ["글로벌주식형", "국내주식형", "채권형", "안정혼합형"],
+    important_notes: "이 보험은 예금자보호법에 따라 보호되지 않습니다. 투자실적에 따라 사망보험금이 변동되며, 최저사망보험금이 보장됩니다. 펀드 운용 결과에 따라 원금손실이 발생할 수 있습니다."
+  },
+  {
+    id: "SL-007",
+    product_name: "신한 무배당 치아보험",
+    product_type: "치아보험",
+    insurance_period: "10년 갱신형",
+    payment_period: "전기납",
+    target_audience: "치과 치료비 부담을 줄이고 싶은 고객",
+    main_coverage: [
+      "보존치료 (충전, 크라운) 연간 3회",
+      "보철치료 (임플란트, 브릿지, 틀니) 연간 2개",
+      "치주치료 (스케일링, 잇몸치료)",
+      "영구치 발치"
+    ],
+    monthly_premium_example: "30세 기준 약 25,000원",
+    waiting_period: "보존치료 90일, 보철치료 1년",
+    important_notes: "면책기간 및 감액기간이 적용됩니다. 보철치료는 가입 후 1년 이후부터 보장됩니다. 10년마다 갱신되며 갱신 시 보험료가 인상될 수 있습니다."
+  },
+  {
+    id: "SL-008",
+    product_name: "신한 무배당 간병인지원보험",
+    product_type: "간병보험",
+    insurance_period: "80세/100세 만기",
+    payment_period: "10년납, 20년납, 전기납",
+    target_audience: "노후 간병비용 준비를 원하는 40~60대",
+    main_coverage: [
+      "장기요양 1~2등급 판정 시 간병자금 3,000만원",
+      "장기요양 3~5등급 판정 시 간병자금 1,500만원",
+      "치매진단비 1,000만원",
+      "간병인사용일당 10만원 (최대 180일)"
+    ],
+    monthly_premium_example: "50세, 80세 만기, 20년납 기준 약 65,000원",
+    underwriting: "표준심사",
+    important_notes: "장기요양등급 판정은 국민건강보험공단의 기준에 따릅니다. 보장 내용은 약관에서 정한 조건에 따라 달라질 수 있습니다."
+  }
+];
+
+// 그룹사별 상품 매핑
+export const SECTOR_PRODUCTS: Record<Sector, typeof PRODUCTS | typeof CARD_PRODUCTS | typeof INVESTMENT_PRODUCTS | typeof LIFE_PRODUCTS> = {
+  은행: PRODUCTS,
+  카드: CARD_PRODUCTS,
+  증권: INVESTMENT_PRODUCTS,
+  라이프: LIFE_PRODUCTS,
+};

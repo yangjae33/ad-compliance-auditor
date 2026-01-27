@@ -119,7 +119,7 @@ export default function ComplianceReport({
               <FileCheck className="w-8 h-8" />
               <div>
                 <h3 className="text-lg font-semibold">광고 컴플라이언스 리포트</h3>
-                <p className="text-blue-100 text-sm">Blue Pen</p>
+                <p className="text-blue-100 text-sm">SOLens</p>
               </div>
             </div>
             <div className="text-right text-sm text-blue-100">

@@ -393,7 +393,7 @@ export default function ConsumerProtectionPage() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-gray-500 mt-8">
-          <p>Blue Pen v1.0 - 소비자보호부 모드</p>
+          <p>SOLens v1.0 - 소비자보호부 모드</p>
         </footer>
       </div>
     </main>
