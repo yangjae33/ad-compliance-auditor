@@ -47,9 +47,15 @@ const sectorIcons: Record<Sector, React.ReactNode> = {
 
 const statusConfig: Record<DraftStatus, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
   pending: {
-    label: "검토 대기",
+    label: "소비자보호부 검토 대기",
     color: "text-yellow-700",
     bgColor: "bg-yellow-100",
+    icon: <Clock className="w-4 h-4" />,
+  },
+  consumer_approved: {
+    label: "준법감시인 검토 대기",
+    color: "text-blue-700",
+    bgColor: "bg-blue-100",
     icon: <Clock className="w-4 h-4" />,
   },
   approved: {
@@ -149,7 +155,7 @@ export default function DraftDetailPage() {
 
   // 은행 그룹사이고 아직 AI 검토가 안됐으면 자동으로 실행
   useEffect(() => {
-    if (draft && draft.sector === "은행" && draft.status === "pending" && !aiReviewCompleted && !isAIReviewing) {
+    if (draft && draft.sector === "은행" && (draft.status === "pending" || draft.status === "consumer_approved") && !aiReviewCompleted && !isAIReviewing) {
       runAIReview();
     }
   }, [draft, aiReviewCompleted, isAIReviewing, runAIReview]);
@@ -297,7 +303,7 @@ export default function DraftDetailPage() {
               {isBankSector && (
                 <div className="flex items-center gap-2">
                   {/* AI 재검토 버튼 */}
-                  {draft.status === "pending" && (
+                  {(draft.status === "pending" || draft.status === "consumer_approved") && (
                     <button
                       onClick={runAIReview}
                       disabled={isAIReviewing}
@@ -351,7 +357,7 @@ export default function DraftDetailPage() {
                   aiResults={aiResults}
                   aiSummary={aiSummary}
                   isAIReviewing={isAIReviewing}
-                  readOnly={draft.status !== "pending"}
+                  readOnly={draft.status !== "pending" && draft.status !== "consumer_approved"}
                 />
               </div>
             </div>
@@ -545,7 +551,7 @@ export default function DraftDetailPage() {
                   )}
 
                   {/* Review Actions */}
-                  {draft.status === "pending" ? (
+                  {(draft.status === "pending" || draft.status === "consumer_approved") ? (
                     <div className="space-y-3">
                       <div>
                         <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">
