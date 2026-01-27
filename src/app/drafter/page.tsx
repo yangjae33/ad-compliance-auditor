@@ -57,6 +57,16 @@ export default function DrafterPage() {
     const fullContent = (data.title + " " + data.content);
     const contentLower = fullContent.toLowerCase();
 
+    // 금융 용어로서 허용되는 단어 조합 (이 패턴은 금지 표현에서 제외)
+    const allowedFinancialTerms = [
+      "최고금리", "최저금리", "기본금리", "우대금리", "적용금리",
+      "최고이율", "최저이율", "연이율",
+      "최대한도", "최소한도", "저축한도",
+      "최대.*%", "최고.*%",  // 숫자와 함께 쓰인 경우
+      "금리.*최고", "금리.*최대",
+      "이자율.*최고", "이자율.*최대",
+    ];
+
     // 허용되는 필수 문구 패턴 (이 패턴이 포함된 문장은 금지 표현 검사에서 제외)
     const allowedMandatoryPatterns = [
       "상품설명서.*반드시",
@@ -65,15 +75,46 @@ export default function DrafterPage() {
       "반드시.*확인",
       "반드시.*읽어보",
       "반드시.*참조",
+      "반드시.*문의",
       "예금자보호법에 따라",
+      "예금자보호법.*보호",
       "원금과.*이자.*합하여.*보호",
       "5천만원.*보호|1억원.*보호",
       "월.*최대.*원",  // 혜택 한도 표시
-      "최대.*적립|최대.*할인|최대.*혜택",  // 혜택 조건 표시 (조건 명시된 경우)
+      "최대.*적립|최대.*할인|최대.*혜택",  // 혜택 조건 표시
     ];
+
+    // 금융 용어인지 확인하는 함수
+    const isFinancialTerm = (matchedText: string, content: string): boolean => {
+      const lowerContent = content.toLowerCase();
+      const lowerMatch = matchedText.toLowerCase();
+
+      // 매칭된 텍스트 주변 확인 (앞 10자, 뒤 10자)
+      const matchIndex = lowerContent.indexOf(lowerMatch);
+      if (matchIndex === -1) return false;
+
+      const start = Math.max(0, matchIndex - 10);
+      const end = Math.min(content.length, matchIndex + lowerMatch.length + 10);
+      const context = content.substring(start, end);
+
+      // 금융 용어 패턴 체크
+      return allowedFinancialTerms.some(term => {
+        try {
+          const regex = new RegExp(term, "i");
+          return regex.test(context);
+        } catch {
+          return context.includes(term);
+        }
+      });
+    };
 
     // 문맥이 허용 패턴에 해당하는지 확인하는 함수
     const isInAllowedContext = (matchedText: string, content: string): boolean => {
+      // 먼저 금융 용어인지 확인
+      if (isFinancialTerm(matchedText, content)) {
+        return true;
+      }
+
       // 매칭된 텍스트 주변 문맥 추출 (앞뒤 50자)
       const matchIndex = content.toLowerCase().indexOf(matchedText.toLowerCase());
       if (matchIndex === -1) return false;
@@ -182,19 +223,62 @@ export default function DrafterPage() {
         }
       });
 
-      // 필수 체크리스트 항목 검사
+      // 체크리스트 항목별 실제 검사 패턴 매핑
+      const checklistPatterns: Record<string, string[]> = {
+        // 은행 명칭 관련
+        "은행 명칭 표시": ["은행", "신한", "국민", "우리", "하나", "기업", "농협", "SC", "씨티"],
+        "은행 명칭": ["은행", "신한", "국민", "우리", "하나", "기업", "농협"],
+        // 심의필 관련
+        "광고심의필 번호": ["심의필", "심의번호", "광고심의"],
+        "유효기간 표시": ["유효기간", "~까지", "년.*월.*일"],
+        // 금리 관련
+        "이자율 범위": ["금리", "이자율", "이율", "%", "연"],
+        "이자율 정보": ["금리", "이자율", "이율", "%"],
+        "연체이자율": ["연체", "지연이자", "연체이자"],
+        "산출기준": ["기준", "산출", "적용"],
+        // 중도상환 관련
+        "중도상환 조건": ["중도해지", "중도상환", "해지", "해약"],
+        "중도상환": ["중도해지", "중도상환", "해지"],
+        // 예금자보호 관련
+        "예금자보호": ["예금자보호법", "보호", "5천만원", "1억원"],
+        // 가입대상/조건
+        "가입대상": ["가입대상", "대상", "만.*세", "개인", "법인"],
+        "가입조건": ["가입조건", "조건", "자격"],
+        // 기타
+        "저축한도": ["한도", "저축한도", "월.*만원", "최대.*원"],
+        "가입기간": ["기간", "개월", "년"],
+      };
+
+      // 필수 체크리스트 항목 검사 (개선된 버전)
       const requiredItems = guideline.checklist.filter(item => item.required);
-      requiredItems.forEach((item) => {
-        // 체크리스트 항목과 관련된 내용이 있는지 간단히 검사
-        const itemKeywords = item.item.split(" ").filter(w => w.length > 2);
-        const hasRelatedContent = itemKeywords.some(keyword =>
-          contentLower.includes(keyword.toLowerCase()) || 
-          Object.keys(data.sectorFields).some(field => 
-            field.toLowerCase().includes(keyword.toLowerCase()) && data.sectorFields[field]
-          )
-        );
+      requiredItems.forEach((checkItem) => {
+        // 체크리스트 항목명에 매칭되는 패턴 찾기
+        let patterns: string[] = [];
+
+        // 직접 매칭되는 패턴이 있는지 확인
+        for (const [key, value] of Object.entries(checklistPatterns)) {
+          if (checkItem.item.includes(key) || key.includes(checkItem.item.split(" ")[0])) {
+            patterns = [...patterns, ...value];
+          }
+        }
+
+        // 패턴이 없으면 항목명에서 키워드 추출
+        if (patterns.length === 0) {
+          patterns = checkItem.item.split(" ").filter(w => w.length > 1);
+        }
+
+        // 패턴 중 하나라도 매칭되면 OK
+        const hasRelatedContent = patterns.some(pattern => {
+          try {
+            const regex = new RegExp(pattern, "i");
+            return regex.test(fullContent);
+          } catch {
+            return contentLower.includes(pattern.toLowerCase());
+          }
+        });
+
         if (!hasRelatedContent) {
-          suggestions.push(`체크리스트 확인 필요: ${item.item}`);
+          suggestions.push(`체크리스트 확인 필요: ${checkItem.item}`);
         }
       });
     }
