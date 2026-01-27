@@ -127,8 +127,33 @@ ${product.deposit_protection}`;
       const result = await response.json();
 
       if (result.success && result.data) {
-        setTitle(result.data.productName || "");
-        setContent(result.data.description || "");
+        const data = result.data;
+
+        // Set product name as title
+        setTitle(data.productName || "");
+
+        // Build content from extracted data
+        let contentText = data.description || data.extractedText || "";
+
+        // Add extracted details if available
+        const details: string[] = [];
+        if (data.interestRate) details.push(`금리: ${data.interestRate}`);
+        if (data.period) details.push(`가입기간: ${data.period}`);
+        if (data.targetAudience) details.push(`가입대상: ${data.targetAudience}`);
+
+        if (details.length > 0) {
+          contentText = `${details.join(" | ")}\n\n${contentText}`;
+        }
+
+        // Add missing requirements as editable placeholders
+        if (data.missingRequirements && data.missingRequirements.length > 0) {
+          const missingItems = data.missingRequirements
+            .map((item: string) => `[수정필요] ${item}`)
+            .join("\n");
+          contentText = `${contentText}\n\n※ 누락된 필수 항목 (수정 필요):\n${missingItems}`;
+        }
+
+        setContent(contentText);
 
         if (result.isMock) {
           console.log("Using mock data for auto-fill");

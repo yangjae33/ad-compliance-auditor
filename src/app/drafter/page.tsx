@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowLeft, FileEdit, Send, CheckCircle, BookOpen } from "lucide-react";
+import { ArrowRight, ArrowLeft, FileEdit, Send, CheckCircle, BookOpen, Mail } from "lucide-react";
 import SectorSelector from "@/components/SectorSelector";
 import AdInputForm, { AdFormData } from "@/components/AdInputForm";
 import AnalysisResultComponent from "@/components/AnalysisResult";
@@ -30,6 +30,7 @@ export default function DrafterPage() {
   const [adData, setAdData] = useState<AdFormData | null>(null);
   const [submittedDraftId, setSubmittedDraftId] = useState<string | null>(null);
   const [showGuideline, setShowGuideline] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState("");
 
   const handleSectorSelect = (sector: Sector) => {
     setSelectedSector(sector);
@@ -198,22 +199,53 @@ export default function DrafterPage() {
     setAnalysisResult(null);
   };
 
-  const handleSubmitDraft = () => {
-    if (!adData || !analysisResult || !selectedSector) return;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const draftId = addDraft({
-      title: adData.title,
-      content: adData.content,
-      correctedContent: analysisResult.correctedContent,
-      sector: selectedSector,
-      status: "pending",
-      analysisResult,
-      createdBy: "현재 사용자",
-      sectorFields: adData.sectorFields,
-    });
+  const handleSubmitDraft = async () => {
+    if (!adData || !analysisResult || !selectedSector || !recipientEmail) return;
 
-    setSubmittedDraftId(draftId);
-    setCurrentStep("submitted");
+    setIsSubmitting(true);
+
+    try {
+      // Send email notification to the recipient
+      const emailResponse = await fetch("/api/agent/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: recipientEmail,
+          status: analysisResult.status === "Approved" ? "PASS" : "FAIL",
+          score: analysisResult.status === "Approved" ? 100 : analysisResult.status === "AutoCorrected" ? 70 : 30,
+          feedback: analysisResult.suggestions.join("\n") || "검토가 완료되었습니다.",
+          adTitle: adData.title,
+          sector: selectedSector,
+        }),
+      });
+
+      const emailResult = await emailResponse.json();
+      console.log("Email sent:", emailResult);
+
+      // Add draft to local state
+      const draftId = addDraft({
+        title: adData.title,
+        content: adData.content,
+        correctedContent: analysisResult.correctedContent,
+        sector: selectedSector,
+        status: "pending",
+        analysisResult,
+        createdBy: "현재 사용자",
+        sectorFields: adData.sectorFields,
+      });
+
+      setSubmittedDraftId(draftId);
+      setCurrentStep("submitted");
+    } catch (error) {
+      console.error("Submit draft error:", error);
+      alert("기안 제출 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -362,18 +394,51 @@ export default function DrafterPage() {
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
                   <h4 className="font-medium text-purple-800 mb-2 flex items-center">
                     <Send className="w-4 h-4 mr-2" />
-                    준법감시인에게 기안 제출
+                    담당자에게 기안 제출
                   </h4>
                   <p className="text-sm text-purple-600">
-                    이 광고 기안서를 준법감시인에게 제출하여 최종 승인을 요청합니다.
+                    이 광고 기안서를 담당자에게 제출하여 결재를 요청합니다.
                   </p>
                 </div>
+
+                {/* Recipient Email Input */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Mail className="w-4 h-4 inline mr-1" />
+                    담당자 이메일
+                  </label>
+                  <input
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="compliance@company.com"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                  />
+                </div>
+
                 <button
                   onClick={handleSubmitDraft}
-                  className="w-full py-3 px-4 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center justify-center"
+                  disabled={!recipientEmail || isSubmitting}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${
+                    recipientEmail && !isSubmitting
+                      ? "bg-purple-600 text-white hover:bg-purple-700"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  기안 제출하기
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      발송 중...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      담당자에게 결재 요청하기
+                    </>
+                  )}
                 </button>
               </div>
             </div>

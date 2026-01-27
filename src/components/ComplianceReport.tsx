@@ -182,7 +182,7 @@ export default function ComplianceReport({
           {/* Checklist */}
           <div>
             <h4 className="text-sm font-medium text-gray-500 mb-2">컴플라이언스 체크리스트</h4>
-            <div className="bg-gray-50 p-4 rounded space-y-2">
+            <div className="bg-gray-50 p-4 rounded space-y-2 text-gray-900">
               <div className="flex items-center text-sm">
                 {result.violations.length === 0 ? (
                   <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
@@ -253,7 +253,7 @@ export default function ComplianceReport({
                         value={emailAddress}
                         onChange={(e) => setEmailAddress(e.target.value)}
                         placeholder="example@company.com"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                       />
                     </div>
                     {emailError && (
