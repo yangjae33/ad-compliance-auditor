@@ -23,8 +23,8 @@ import { DraftStatus, Sector } from "@/data/mockData";
 const sectorIcons: Record<Sector, React.ReactNode> = {
   은행: <Building2 className="w-4 h-4" />,
   카드: <CreditCard className="w-4 h-4" />,
-  투자: <TrendingUp className="w-4 h-4" />,
-  보험: <Shield className="w-4 h-4" />,
+  증권: <TrendingUp className="w-4 h-4" />,
+  라이프: <Shield className="w-4 h-4" />,
 };
 
 const statusConfig: Record<DraftStatus, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
@@ -267,7 +267,7 @@ export default function ComplianceOfficerPage() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-gray-500 mt-8">
-          <p>Smart Compliance Auditor v2.0 - 준법감시인 모드</p>
+          <p>Blue Pen v1.0 - 준법감시인 모드</p>
         </footer>
       </div>
     </main>

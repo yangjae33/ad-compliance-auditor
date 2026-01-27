@@ -63,7 +63,7 @@ const INITIAL_DRAFTS: DraftDocument[] = [
     id: "draft-003",
     title: "안정적인 채권형 펀드",
     content: "원금손실 가능성이 있으며, 투자 전 투자설명서를 반드시 확인하시기 바랍니다. 과거 운용실적이 미래 수익을 보장하지 않습니다.",
-    sector: "투자",
+    sector: "증권",
     status: "approved",
     analysisResult: {
       status: "Approved",

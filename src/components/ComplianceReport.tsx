@@ -119,7 +119,7 @@ export default function ComplianceReport({
               <FileCheck className="w-8 h-8" />
               <div>
                 <h3 className="text-lg font-semibold">광고 컴플라이언스 리포트</h3>
-                <p className="text-blue-100 text-sm">Smart Compliance Auditor</p>
+                <p className="text-blue-100 text-sm">Blue Pen</p>
               </div>
             </div>
             <div className="text-right text-sm text-blue-100">
@@ -152,7 +152,7 @@ export default function ComplianceReport({
           {/* Summary Section */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-500 mb-2">업종</h4>
+              <h4 className="text-sm font-medium text-gray-500 mb-2">그룹사</h4>
               <p className="text-lg font-semibold text-gray-800">{sector}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -206,7 +206,7 @@ export default function ComplianceReport({
               </div>
               <div className="flex items-center text-sm">
                 <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span>업종별 필수 문구 검사</span>
+                <span>그룹사별 필수 문구 검사</span>
               </div>
             </div>
           </div>

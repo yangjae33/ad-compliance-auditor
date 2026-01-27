@@ -22,24 +22,24 @@ const sectors: { value: Sector; label: string; icon: React.ReactNode; descriptio
     description: "신용카드, 체크카드 광고",
   },
   {
-    value: "투자",
-    label: "투자",
+    value: "증권",
+    label: "증권",
     icon: <TrendingUp className="w-6 h-6" />,
     description: "펀드, 주식, 채권 광고",
   },
   {
-    value: "보험",
-    label: "보험",
+    value: "라이프",
+    label: "라이프",
     icon: <Shield className="w-6 h-6" />,
-    description: "생명보험, 손해보험 광고",
+    description: "생명보험 광고",
   },
 ];
 
 export default function SectorSelector({ selectedSector, onSelectSector }: SectorSelectorProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-800">Step 0: 업종 선택</h2>
-      <p className="text-gray-600">광고의 업종을 선택해주세요. 업종에 따라 적용되는 규정이 달라집니다.</p>
+      <h2 className="text-xl font-semibold text-gray-800">Step 0: 그룹사 선택</h2>
+      <p className="text-gray-600">그룹사를 선택해주세요. 그룹사에 따라 적용되는 규정이 달라집니다.</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {sectors.map((sector) => (
           <button
