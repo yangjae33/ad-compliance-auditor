@@ -141,13 +141,15 @@ export default function DrafterPage() {
     let correctedContent: string | undefined;
 
     if (violations.length > 0 && matchedHistory) {
-      status = "Rejected";
+      // 심각한 위반 + 과거 거부 이력 = 반려
+      status = "반려";
       riskLevel = "High";
-    } else if (violations.length > 0) {
-      status = "AutoCorrected";
-      riskLevel = "Low";
+    } else if (violations.length > 0 || suggestions.length > 0) {
+      // 위반 사항 또는 개선 필요 = 조건부 승인
+      status = "조건부 승인";
+      riskLevel = violations.length > 0 ? "High" : "Low";
       correctedContent = data.content;
-      if (regulation) {
+      if (regulation && violations.length > 0) {
         regulation.keywords.forEach((keyword) => {
           const regex = new RegExp(keyword, "gi");
           correctedContent = correctedContent?.replace(regex, "[수정 필요]");
@@ -164,12 +166,12 @@ export default function DrafterPage() {
           }
         });
       }
-    } else if (suggestions.length > 0) {
-      status = "AutoCorrected";
-      riskLevel = "Low";
-      correctedContent = data.content + `\n\n※ 권장사항:\n${suggestions.slice(0, 3).join("\n")}`;
+      if (suggestions.length > 0 && !violations.length) {
+        correctedContent = data.content + `\n\n※ 권장사항:\n${suggestions.slice(0, 3).join("\n")}`;
+      }
     } else {
-      status = "Approved";
+      // 문제 없음 = 승인
+      status = "승인";
       riskLevel = "Low";
     }
 
@@ -384,7 +386,7 @@ export default function DrafterPage() {
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">기안이 제출되었습니다</h2>
               <p className="text-gray-600 mb-6">
-                준법감시인이 검토 후 승인/반려 결정을 내릴 예정입니다.
+                유관부서 및 컴플라이언스 담당자에게 알림이 발송되었습니다.
               </p>
               <p className="text-sm text-gray-500 mb-8">
                 기안 ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{submittedDraftId}</span>

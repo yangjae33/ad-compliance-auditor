@@ -15,6 +15,8 @@ interface ComplianceContextType {
   getDraftById: (id: string) => DraftDocument | undefined;
   getDraftsByStatus: (status: DraftStatus) => DraftDocument[];
   getPendingDraftsCount: () => number;
+  getConsumerProtectionPendingCount: () => number; // 소비자보호부 심사 대기 건수
+  getComplianceOfficerPendingCount: () => number; // 준법감시인 심사 대기 건수
 }
 
 const ComplianceContext = createContext<ComplianceContextType | undefined>(undefined);
@@ -26,9 +28,9 @@ const INITIAL_DRAFTS: DraftDocument[] = [
     title: "연 5.5% 고금리 정기예금 출시",
     content: "새로운 고금리 정기예금 상품을 출시합니다. 예금자보호법에 따라 원금과 이자를 합하여 5천만원까지 보호됩니다.",
     sector: "은행",
-    status: "pending",
+    status: "pending", // 소비자보호부 심사 대기
     analysisResult: {
-      status: "Approved",
+      status: "승인",
       riskLevel: "Low",
       violations: [],
       matchedHistory: null,
@@ -45,9 +47,9 @@ const INITIAL_DRAFTS: DraftDocument[] = [
     content: "연회비 10만원으로 최대 할인 혜택을 누리세요. 모든 가맹점에서 무이자 할부가 가능합니다.",
     correctedContent: "연회비 10만원으로 다양한 할인 혜택을 누리세요. 제휴 가맹점에서 [수정 필요] 할부가 가능합니다.\n\n※ 할인 및 혜택은 이용 조건에 따라 달라질 수 있습니다.",
     sector: "카드",
-    status: "pending",
+    status: "consumer_approved", // 소비자보호부 승인 완료, 준법감시인 심사 대기
     analysisResult: {
-      status: "AutoCorrected",
+      status: "조건부 승인",
       riskLevel: "Low",
       violations: ["금지 키워드 발견: \"무이자\"", "금지 키워드 발견: \"최대 할인\""],
       matchedHistory: null,
@@ -55,8 +57,10 @@ const INITIAL_DRAFTS: DraftDocument[] = [
       correctedContent: "연회비 10만원으로 다양한 할인 혜택을 누리세요. 제휴 가맹점에서 [수정 필요] 할부가 가능합니다.\n\n※ 할인 및 혜택은 이용 조건에 따라 달라질 수 있습니다.",
     },
     createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
     createdBy: "이기안",
+    reviewedBy: "박소보",
+    reviewComment: "소비자보호 관점에서 검토 완료. 준법감시인 검토 요청.",
     sectorFields: { "연회비 정보 포함": true, "혜택 조건 명시": false },
   },
   {
@@ -64,9 +68,9 @@ const INITIAL_DRAFTS: DraftDocument[] = [
     title: "안정적인 채권형 펀드",
     content: "원금손실 가능성이 있으며, 투자 전 투자설명서를 반드시 확인하시기 바랍니다. 과거 운용실적이 미래 수익을 보장하지 않습니다.",
     sector: "증권",
-    status: "approved",
+    status: "approved", // 최종 승인
     analysisResult: {
-      status: "Approved",
+      status: "승인",
       riskLevel: "Low",
       violations: [],
       matchedHistory: null,
@@ -78,6 +82,24 @@ const INITIAL_DRAFTS: DraftDocument[] = [
     reviewedBy: "최준법",
     reviewComment: "규정 준수 확인. 승인합니다.",
     sectorFields: { "투자 위험 고지 포함": true, "원금손실 가능성 명시": true },
+  },
+  {
+    id: "draft-004",
+    title: "라이프 종신보험 신상품",
+    content: "평생 보장받는 종신보험입니다. 보험계약 전 상품설명서를 반드시 확인하시기 바랍니다.",
+    sector: "라이프",
+    status: "pending", // 소비자보호부 심사 대기
+    analysisResult: {
+      status: "승인",
+      riskLevel: "Low",
+      violations: [],
+      matchedHistory: null,
+      suggestions: ["해지환급금 안내 추가 권장"],
+    },
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    createdBy: "정기안",
+    sectorFields: { "보험계약 전 확인 문구": true },
   },
 ];
 
@@ -131,6 +153,16 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
     return drafts.filter((draft) => draft.status === "pending").length;
   }, [drafts]);
 
+  // 소비자보호부 심사 대기 건수 (pending 상태)
+  const getConsumerProtectionPendingCount = useCallback(() => {
+    return drafts.filter((draft) => draft.status === "pending").length;
+  }, [drafts]);
+
+  // 준법감시인 심사 대기 건수 (consumer_approved 상태)
+  const getComplianceOfficerPendingCount = useCallback(() => {
+    return drafts.filter((draft) => draft.status === "consumer_approved").length;
+  }, [drafts]);
+
   return (
     <ComplianceContext.Provider
       value={{
@@ -142,6 +174,8 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
         getDraftById,
         getDraftsByStatus,
         getPendingDraftsCount,
+        getConsumerProtectionPendingCount,
+        getComplianceOfficerPendingCount,
       }}
     >
       {children}

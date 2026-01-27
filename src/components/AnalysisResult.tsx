@@ -14,28 +14,31 @@ interface AnalysisResultProps {
 export default function AnalysisResult({ result, originalContent, onProceed, onRetry, aiScore }: AnalysisResultProps) {
   const getStatusConfig = () => {
     switch (result.status) {
-      case "Rejected":
+      case "반려":
         return {
           icon: <XCircle className="w-8 h-8" />,
-          title: "광고 거부됨",
+          title: "반려",
+          description: "광고 내용에 심각한 위반 사항이 발견되어 반려되었습니다.",
           bgColor: "bg-red-50",
           borderColor: "border-red-200",
           textColor: "text-red-700",
           iconBg: "bg-red-100",
         };
-      case "AutoCorrected":
+      case "조건부 승인":
         return {
           icon: <Edit3 className="w-8 h-8" />,
-          title: "수정 필요",
-          bgColor: "bg-yellow-50",
-          borderColor: "border-yellow-200",
-          textColor: "text-yellow-700",
-          iconBg: "bg-yellow-100",
+          title: "조건부 승인",
+          description: "일부 수정이 필요하지만 조건 충족 시 승인 가능합니다.",
+          bgColor: "bg-amber-50",
+          borderColor: "border-amber-200",
+          textColor: "text-amber-700",
+          iconBg: "bg-amber-100",
         };
-      case "Approved":
+      case "승인":
         return {
           icon: <CheckCircle className="w-8 h-8" />,
-          title: "광고 승인됨",
+          title: "승인",
+          description: "광고 내용이 컴플라이언스 기준을 충족합니다.",
           bgColor: "bg-green-50",
           borderColor: "border-green-200",
           textColor: "text-green-700",
@@ -61,8 +64,8 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-800">Step 3 & 4: AI 분석 결과</h2>
-        <p className="text-gray-600 mt-1">Gemini AI 에이전트가 광고 내용을 분석한 결과입니다.</p>
+        <h2 className="text-xl font-semibold text-gray-800">AI 분석 결과</h2>
+        <p className="text-gray-600 mt-1">AI 에이전트가 광고 내용을 분석한 결과입니다.</p>
       </div>
 
       {/* AI Score Card */}
@@ -101,11 +104,7 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
           </div>
           <div>
             <h3 className={`text-lg font-semibold ${config.textColor}`}>{config.title}</h3>
-            <p className="text-sm text-gray-600">
-              위험 수준: <span className={result.riskLevel === "High" ? "text-red-600 font-medium" : "text-yellow-600 font-medium"}>
-                {result.riskLevel === "High" ? "높음" : "낮음"}
-              </span>
-            </p>
+            <p className="text-sm text-gray-600">{config.description}</p>
           </div>
         </div>
 
@@ -154,7 +153,7 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
           </div>
         )}
 
-        {result.status === "AutoCorrected" && result.correctedContent && (
+        {result.status === "조건부 승인" && result.correctedContent && (
           <div className="mb-4">
             <h4 className="text-sm font-medium text-gray-700 mb-2">제안된 수정 내용</h4>
             <div className="grid md:grid-cols-2 gap-4">
@@ -178,7 +177,7 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
         >
           다시 입력하기
         </button>
-        {result.status !== "Rejected" && (
+        {result.status !== "반려" && (
           <button
             onClick={onProceed}
             className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"

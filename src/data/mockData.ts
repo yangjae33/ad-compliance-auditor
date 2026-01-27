@@ -18,21 +18,26 @@ export const PERSONAS: Persona[] = [
     color: "blue",
   },
   {
-    type: "compliance_officer",
-    label: "준법감시인",
-    description: "기안된 광고를 검토하고 최종 승인/반려합니다",
-    color: "purple",
-  },
-  {
     type: "consumer_protection",
     label: "소비자보호부",
-    description: "소비자 관점에서 광고를 검토합니다",
+    description: "소비자 관점에서 광고를 검토하고 승인합니다",
     color: "teal",
+  },
+  {
+    type: "compliance_officer",
+    label: "준법감시인",
+    description: "소비자보호부 승인 후 최종 승인/반려합니다",
+    color: "purple",
   },
 ];
 
 // 기안 문서 상태
-export type DraftStatus = "pending" | "approved" | "rejected" | "review_requested";
+// pending: 소비자보호부 심사 대기
+// consumer_approved: 소비자보호부 승인 완료 (준법감시인 심사 대기)
+// approved: 최종 승인 (준법감시인 승인)
+// rejected: 반려
+// review_requested: 수정 요청
+export type DraftStatus = "pending" | "consumer_approved" | "approved" | "rejected" | "review_requested";
 
 // 기안 문서 인터페이스
 export interface DraftDocument {
@@ -67,7 +72,7 @@ export interface HistoryItem {
 }
 
 export interface AnalysisResult {
-  status: "Rejected" | "AutoCorrected" | "Approved";
+  status: "승인" | "조건부 승인" | "반려";
   riskLevel: "High" | "Low";
   violations: string[];
   matchedHistory: HistoryItem | null;

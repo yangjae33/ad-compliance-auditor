@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileText, Image as ImageIcon, Sparkles, X, Search } from "lucide-react";
+import { Upload, FileText, Image as ImageIcon, Sparkles, X, Search, Wand2 } from "lucide-react";
 import { Sector, SECTOR_FIELDS, PRODUCTS } from "@/data/mockData";
 
 interface Product {
@@ -39,6 +39,19 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showProductModal, setShowProductModal] = useState(false);
   const [productSearchQuery, setProductSearchQuery] = useState("");
+  
+  // New product states
+  const [isNewProduct, setIsNewProduct] = useState(false);
+  const [newProductName, setNewProductName] = useState("");
+
+  // AI Recommend states
+  const [isRecommending, setIsRecommending] = useState(false);
+  const [showRecommendModal, setShowRecommendModal] = useState(false);
+  const [recommendResult, setRecommendResult] = useState<{
+    improvedContent: string;
+    suggestions: string[];
+    complianceScore: number;
+  } | null>(null);
 
   const fields = SECTOR_FIELDS[sector];
 
@@ -134,61 +147,168 @@ ${product.deposit_protection}`;
     onAnalyze({ title, content, imageFile, sectorFields });
   };
 
+  const handleAIRecommend = async () => {
+    if (!content) {
+      alert("AI 추천을 받으려면 광고 내용을 먼저 입력해주세요.");
+      return;
+    }
+
+    setIsRecommending(true);
+    setShowRecommendModal(true);
+    setRecommendResult(null);
+
+    try {
+      const response = await fetch("/api/agent/recommend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content,
+          sector,
+          title,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setRecommendResult(result.data);
+      } else {
+        alert("AI 추천 생성에 실패했습니다.");
+        setShowRecommendModal(false);
+      }
+    } catch (error) {
+      console.error("AI Recommend error:", error);
+      alert("AI 추천 중 오류가 발생했습니다.");
+      setShowRecommendModal(false);
+    } finally {
+      setIsRecommending(false);
+    }
+  };
+
+  const handleApplyRecommendation = () => {
+    if (recommendResult?.improvedContent) {
+      setContent(recommendResult.improvedContent);
+      setShowRecommendModal(false);
+      setRecommendResult(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-800">Step 1 & 2: 광고 입력 및 분류</h2>
-        <p className="text-gray-600 mt-1">광고 정보를 입력하면 {sector} 그룹사 규정에 따라 분류됩니다.</p>
+        <h2 className="text-xl font-semibold text-gray-800">광고 내용 입력</h2>
+        <p className="text-gray-600 mt-1">{sector} 그룹사 광고 내용을 입력해주세요.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Product Info Section */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-800 mb-3">
-            상품 정보
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                상품명
-              </label>
-              <input
-                type="text"
-                value={selectedProduct?.product_name || ""}
-                readOnly
-                placeholder="검색 버튼을 클릭하여 선택"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
-              />
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-medium text-blue-800">
+              상품 정보
+            </h3>
+            <div className="flex bg-white rounded-lg p-1 border border-blue-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsNewProduct(false);
+                  setNewProductName("");
+                }}
+                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                  !isNewProduct
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-blue-600"
+                }`}
+              >
+                기존 상품
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsNewProduct(true);
+                  setSelectedProduct(null);
+                }}
+                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                  isNewProduct
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-blue-600"
+                }`}
+              >
+                신상품
+              </button>
             </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
+          </div>
+          
+          {isNewProduct ? (
+            // 신상품 입력 UI
+            <div className="space-y-3">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  상품 코드
+                  신상품명
                 </label>
                 <input
                   type="text"
-                  value={selectedProduct?.id || ""}
-                  readOnly
-                  placeholder="-"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                  value={newProductName}
+                  onChange={(e) => setNewProductName(e.target.value)}
+                  placeholder="신상품명을 입력해주세요"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() => setShowProductModal(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                >
-                  <Search className="w-4 h-4" />
-                  검색
-                </button>
-              </div>
+              {newProductName && (
+                <p className="text-sm text-blue-600">
+                  ✓ 신상품 &quot;{newProductName}&quot; 입력 완료
+                </p>
+              )}
             </div>
-          </div>
-          {selectedProduct && (
-            <p className="text-sm text-green-600 mt-2">
-              ✓ 상품 선택 완료 - 필수 고지사항이 광고 내용에 자동 추가되었습니다.
-            </p>
+          ) : (
+            // 기존 상품 검색 UI
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    상품명
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedProduct?.product_name || ""}
+                    readOnly
+                    placeholder="검색 버튼을 클릭하여 선택"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 cursor-not-allowed"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      상품 코드
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedProduct?.id || ""}
+                      readOnly
+                      placeholder="-"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowProductModal(true)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <Search className="w-4 h-4" />
+                      검색
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {selectedProduct && (
+                <p className="text-sm text-green-600 mt-2">
+                  ✓ 상품 선택 완료 - 필수 고지사항이 광고 내용에 자동 추가되었습니다.
+                </p>
+              )}
+            </>
           )}
         </div>
 
@@ -281,22 +401,47 @@ ${product.deposit_protection}`;
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="예: 연 5% 고금리 적금 출시!"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <FileText className="w-4 h-4 inline mr-1" />
-            광고 내용
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium text-gray-700">
+              <FileText className="w-4 h-4 inline mr-1" />
+              광고 내용
+            </label>
+            {content && (
+              <button
+                type="button"
+                onClick={handleAIRecommend}
+                disabled={isRecommending}
+                className="flex items-center px-3 py-1.5 text-sm bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-all disabled:opacity-50"
+              >
+                {isRecommending ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    AI 분석 중...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-4 h-4 mr-1" />
+                    AI 내용 추천
+                  </>
+                )}
+              </button>
+            )}
+          </div>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="광고 본문 내용을 입력하세요..."
             rows={5}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             required
           />
         </div>
@@ -351,7 +496,7 @@ ${product.deposit_protection}`;
                   value={productSearchQuery}
                   onChange={(e) => setProductSearchQuery(e.target.value)}
                   placeholder="상품명 또는 상품 코드로 검색..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoFocus
                 />
               </div>
@@ -391,6 +536,124 @@ ${product.deposit_protection}`;
             <div className="p-4 border-t bg-gray-50 text-sm text-gray-500">
               총 {filteredProducts.length}개 상품
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Recommend Modal */}
+      {showRecommendModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-emerald-500 to-teal-500">
+              <div className="flex items-center gap-2 text-white">
+                <Wand2 className="w-5 h-5" />
+                <h3 className="text-lg font-semibold">AI 광고 내용 추천</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowRecommendModal(false);
+                  setRecommendResult(null);
+                }}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(85vh-140px)]">
+              {isRecommending ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-emerald-200 rounded-full"></div>
+                    <div className="w-16 h-16 border-4 border-emerald-500 rounded-full animate-spin absolute top-0 left-0 border-t-transparent"></div>
+                  </div>
+                  <p className="mt-4 text-gray-600 font-medium">AI가 광고 내용을 분석하고 있습니다...</p>
+                  <p className="mt-1 text-sm text-gray-400">잠시만 기다려주세요</p>
+                </div>
+              ) : recommendResult ? (
+                <div className="space-y-6">
+                  {/* Compliance Score */}
+                  <div className="bg-slate-800 rounded-xl p-4 text-white">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-300 text-sm">현재 컴플라이언스 점수</span>
+                      <div>
+                        <span className={`text-3xl font-bold ${
+                          recommendResult.complianceScore >= 80 ? "text-green-400" :
+                          recommendResult.complianceScore >= 50 ? "text-yellow-400" : "text-red-400"
+                        }`}>
+                          {recommendResult.complianceScore}
+                        </span>
+                        <span className="text-slate-400">/100</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          recommendResult.complianceScore >= 80 ? "bg-green-500" :
+                          recommendResult.complianceScore >= 50 ? "bg-yellow-500" : "bg-red-500"
+                        }`}
+                        style={{ width: `${recommendResult.complianceScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Suggestions */}
+                  {recommendResult.suggestions.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">💡 개선 제안</h4>
+                      <ul className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
+                        {recommendResult.suggestions.map((suggestion, index) => (
+                          <li key={index} className="text-sm text-amber-800 flex items-start gap-2">
+                            <span className="text-amber-500 mt-0.5">•</span>
+                            {suggestion}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Content Comparison */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">📝 원본 내용</h4>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-48 overflow-y-auto">
+                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{content}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-emerald-700 mb-2">✨ AI 추천 내용</h4>
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 h-48 overflow-y-auto">
+                        <p className="text-sm text-emerald-800 whitespace-pre-wrap">{recommendResult.improvedContent}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Modal Footer */}
+            {recommendResult && (
+              <div className="p-4 border-t bg-gray-50 flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setShowRecommendModal(false);
+                    setRecommendResult(null);
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleApplyRecommendation}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  추천 내용 적용하기
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

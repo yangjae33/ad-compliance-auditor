@@ -38,7 +38,7 @@ const sectors: { value: Sector; label: string; icon: React.ReactNode; descriptio
 export default function SectorSelector({ selectedSector, onSelectSector }: SectorSelectorProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-800">Step 0: 그룹사 선택</h2>
+      <h2 className="text-xl font-semibold text-gray-800">그룹사 선택</h2>
       <p className="text-gray-600">그룹사를 선택해주세요. 그룹사에 따라 적용되는 규정이 달라집니다.</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {sectors.map((sector) => (
