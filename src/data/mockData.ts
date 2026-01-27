@@ -182,6 +182,7 @@ export interface ProhibitedExpression {
   description: string;
   regulation: string;
   suggestion: string;
+  allowedContexts?: string[]; // 허용되는 문맥 (예: "최고 금리", "최저 한도" 등)
 }
 
 export interface MandatoryStatement {
@@ -288,10 +289,11 @@ export const BANK_GUIDELINE: SectorGuideline = {
     },
     {
       id: "bank-p2",
-      pattern: "최고|최상|최저|최초|최대|1위|제일|유일",
-      description: "객관적 근거 없는 최상급 표현 사용",
+      pattern: "최고의|최상의|제일 좋|1위|유일한|최고다|최상이다",
+      description: "객관적 근거 없는 최상급 표현 사용 (단, '최고 금리', '최저 금리', '최대 한도' 등 수치 한계를 나타내는 표현은 허용)",
       regulation: "은행 광고심의 기준 제17조 제5호",
       suggestion: "객관적 근거가 있는 사실이나 공인된 자료를 명시하세요.",
+      allowedContexts: ["최고 금리", "최저 금리", "최대 금리", "최고금리", "최저금리", "최대금리", "최고 한도", "최대 한도", "최저 한도", "최고한도", "최대한도", "최저한도", "최초 가입", "최초가입"],
     },
     {
       id: "bank-p3",

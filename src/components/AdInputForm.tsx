@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, FileText, Image as ImageIcon, Sparkles, X, Search, Wand2 } from "lucide-react";
 import { Sector, SECTOR_FIELDS, PRODUCTS } from "@/data/mockData";
 
@@ -13,12 +13,6 @@ interface Product {
   deposit_protection: string;
 }
 
-interface AdInputFormProps {
-  sector: Sector;
-  onAnalyze: (data: AdFormData) => void;
-  isAnalyzing: boolean;
-}
-
 export interface AdFormData {
   title: string;
   content: string;
@@ -26,12 +20,57 @@ export interface AdFormData {
   sectorFields: Record<string, boolean>;
 }
 
-export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputFormProps) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+interface AdInputFormProps {
+  sector: Sector;
+  onAnalyze: (data: AdFormData) => void;
+  isAnalyzing: boolean;
+  initialData?: AdFormData | null;
+}
+
+const SESSION_STORAGE_KEY = "adInputFormData";
+
+// 세션 스토리지에서 데이터 불러오기
+const getSessionData = (): Partial<AdFormData & { newProductName: string; isNewProduct: boolean }> | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const data = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
+};
+
+// 세션 스토리지에 데이터 저장
+const saveSessionData = (data: Partial<AdFormData & { newProductName: string; isNewProduct: boolean }>) => {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // 저장 실패 시 무시
+  }
+};
+
+// 세션 스토리지 초기화
+export const clearSessionData = () => {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch {
+    // 삭제 실패 시 무시
+  }
+};
+
+export default function AdInputForm({ sector, onAnalyze, isAnalyzing, initialData }: AdInputFormProps) {
+  // 세션 스토리지에서 초기값 불러오기
+  const sessionData = getSessionData();
+  
+  const [title, setTitle] = useState(initialData?.title || sessionData?.title || "");
+  const [content, setContent] = useState(initialData?.content || sessionData?.content || "");
+  const [imageFile, setImageFile] = useState<File | null>(initialData?.imageFile || null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [sectorFields, setSectorFields] = useState<Record<string, boolean>>({});
+  const [sectorFields, setSectorFields] = useState<Record<string, boolean>>(
+    initialData?.sectorFields || sessionData?.sectorFields || {}
+  );
   const [isAutoFilling, setIsAutoFilling] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,9 +79,9 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
   const [showProductModal, setShowProductModal] = useState(false);
   const [productSearchQuery, setProductSearchQuery] = useState("");
   
-  // New product states
-  const [isNewProduct, setIsNewProduct] = useState(false);
-  const [newProductName, setNewProductName] = useState("");
+  // New product states (세션에서 불러오기)
+  const [isNewProduct, setIsNewProduct] = useState(sessionData?.isNewProduct || false);
+  const [newProductName, setNewProductName] = useState(sessionData?.newProductName || "");
 
   // AI Recommend states
   const [isRecommending, setIsRecommending] = useState(false);
@@ -52,6 +91,28 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
     suggestions: string[];
     complianceScore: number;
   } | null>(null);
+
+  // initialData가 변경되면 state 업데이트 (다시 입력하기 버튼 클릭 시)
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setContent(initialData.content);
+      setImageFile(initialData.imageFile);
+      setSectorFields(initialData.sectorFields);
+    }
+  }, [initialData]);
+
+  // 세션에 데이터 저장 (모든 입력 상태 변경 시)
+  useEffect(() => {
+    saveSessionData({
+      title,
+      content,
+      sectorFields,
+      imageFile: null, // File 객체는 직렬화 불가
+      isNewProduct,
+      newProductName,
+    });
+  }, [title, content, sectorFields, isNewProduct, newProductName]);
 
   const fields = SECTOR_FIELDS[sector];
 

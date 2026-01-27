@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, ArrowLeft, FileEdit, Send, CheckCircle, BookOpen, Mail } from "lucide-react";
 import SectorSelector from "@/components/SectorSelector";
-import AdInputForm, { AdFormData } from "@/components/AdInputForm";
+import AdInputForm, { AdFormData, clearSessionData } from "@/components/AdInputForm";
 import AnalysisResultComponent from "@/components/AnalysisResult";
 import ComplianceReport from "@/components/ComplianceReport";
 import SectorGuidelinePanel from "@/components/SectorGuidelinePanel";
@@ -21,6 +21,7 @@ type Step = "sector" | "input" | "analysis" | "report" | "submitted";
 
 export default function DrafterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addDraft } = useCompliance();
   
   const [currentStep, setCurrentStep] = useState<Step>("sector");
@@ -31,6 +32,14 @@ export default function DrafterPage() {
   const [submittedDraftId, setSubmittedDraftId] = useState<string | null>(null);
   const [showGuideline, setShowGuideline] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
+
+  // 페이지 진입 시 세션 초기화 (retry 파라미터가 없는 경우에만)
+  useEffect(() => {
+    const isRetry = searchParams.get("retry") === "true";
+    if (!isRetry) {
+      clearSessionData();
+    }
+  }, [searchParams]);
 
   const handleSectorSelect = (sector: Sector) => {
     setSelectedSector(sector);
@@ -83,15 +92,36 @@ export default function DrafterPage() {
           const regex = new RegExp(expr.pattern, "gi");
           const match = fullContent.match(regex);
           if (match) {
-            violations.push(`금지 표현 발견: "${match[0]}" - ${expr.description}`);
-            suggestions.push(`💡 권장: ${expr.suggestion}`);
+            // allowedContexts가 있는 경우, 허용된 문맥인지 확인
+            let isAllowedContext = false;
+            if (expr.allowedContexts && expr.allowedContexts.length > 0) {
+              isAllowedContext = expr.allowedContexts.some(context => 
+                contentLower.includes(context.toLowerCase())
+              );
+            }
+            
+            // 허용된 문맥이 아닌 경우에만 위반으로 처리
+            if (!isAllowedContext) {
+              violations.push(`금지 표현 발견: "${match[0]}" - ${expr.description}`);
+              suggestions.push(`💡 권장: ${expr.suggestion}`);
+            }
           }
         } catch {
           // 정규식 오류 시 단순 문자열 검색
           const simplePattern = expr.pattern.replace(/\\/g, "").replace(/\./g, "").replace(/\{.*?\}/g, "").replace(/\|/g, " ");
           if (contentLower.includes(simplePattern.toLowerCase())) {
-            violations.push(`금지 표현 발견: "${simplePattern}" - ${expr.description}`);
-            suggestions.push(`💡 권장: ${expr.suggestion}`);
+            // allowedContexts 체크
+            let isAllowedContext = false;
+            if (expr.allowedContexts && expr.allowedContexts.length > 0) {
+              isAllowedContext = expr.allowedContexts.some(context => 
+                contentLower.includes(context.toLowerCase())
+              );
+            }
+            
+            if (!isAllowedContext) {
+              violations.push(`금지 표현 발견: "${simplePattern}" - ${expr.description}`);
+              suggestions.push(`💡 권장: ${expr.suggestion}`);
+            }
           }
         }
       });
@@ -195,6 +225,11 @@ export default function DrafterPage() {
   };
 
   const handleRetry = () => {
+    // URL에 retry 파라미터 추가하여 세션 유지
+    const url = new URL(window.location.href);
+    url.searchParams.set("retry", "true");
+    window.history.replaceState({}, "", url.toString());
+    
     setCurrentStep("input");
     setAnalysisResult(null);
   };
@@ -249,6 +284,8 @@ export default function DrafterPage() {
   };
 
   const handleReset = () => {
+    // 새로 시작할 때 세션 스토리지 초기화
+    clearSessionData();
     setCurrentStep("sector");
     setSelectedSector(null);
     setAnalysisResult(null);
@@ -366,6 +403,7 @@ export default function DrafterPage() {
               sector={selectedSector}
               onAnalyze={analyzeAd}
               isAnalyzing={isAnalyzing}
+              initialData={adData}
             />
           )}
 

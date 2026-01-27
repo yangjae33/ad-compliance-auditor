@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { AlertTriangle, CheckCircle, Edit3, XCircle, FileText, History, Sparkles } from "lucide-react";
 import { AnalysisResult as AnalysisResultType } from "@/data/mockData";
 
@@ -9,6 +10,147 @@ interface AnalysisResultProps {
   onProceed: () => void;
   onRetry: () => void;
   aiScore?: number;
+}
+
+// 두 텍스트의 차이점을 찾아 하이라이트하는 함수
+function highlightDifferences(original: string, corrected: string): { originalHighlighted: React.ReactNode; correctedHighlighted: React.ReactNode } {
+  // 줄 단위로 분리하여 비교
+  const originalLines = original.split('\n');
+  const correctedLines = corrected.split('\n');
+  
+  // [수정 필요] 패턴 찾기
+  const modificationMarker = '[수정 필요]';
+  
+  // 원본에서 수정된 부분 하이라이트
+  const originalHighlighted = originalLines.map((line, lineIndex) => {
+    // 수정본에서 해당 라인이 [수정 필요]로 대체되었는지 확인
+    const correctedLine = correctedLines[lineIndex] || '';
+    
+    // 단어 단위로 비교
+    const originalWords = line.split(/(\s+)/);
+    const correctedWords = correctedLine.split(/(\s+)/);
+    
+    const highlightedLine = originalWords.map((word, wordIndex) => {
+      // 공백은 그대로 유지
+      if (word.match(/^\s+$/)) {
+        return <span key={wordIndex}>{word}</span>;
+      }
+      
+      // 수정본에 [수정 필요]가 있고, 원본 단어가 수정본에 없는 경우
+      const isModified = correctedLine.includes(modificationMarker) && 
+                         !correctedWords.includes(word) && 
+                         word.trim().length > 0;
+      
+      if (isModified) {
+        return (
+          <span key={wordIndex} className="bg-red-200 text-red-800 px-0.5 rounded">
+            {word}
+          </span>
+        );
+      }
+      return <span key={wordIndex}>{word}</span>;
+    });
+
+    return (
+      <span key={lineIndex}>
+        {highlightedLine}
+        {lineIndex < originalLines.length - 1 && <br />}
+      </span>
+    );
+  });
+
+  // 수정본에서 추가된 부분 하이라이트
+  const correctedHighlighted = correctedLines.map((line, lineIndex) => {
+    const originalLine = originalLines[lineIndex] || '';
+    
+    // [수정 필요] 표시 하이라이트
+    if (line.includes(modificationMarker)) {
+      const parts = line.split(modificationMarker);
+      const highlightedParts = parts.map((part, partIndex) => (
+        <span key={partIndex}>
+          {part}
+          {partIndex < parts.length - 1 && (
+            <span className="bg-amber-200 text-amber-800 px-1 rounded font-medium">
+              {modificationMarker}
+            </span>
+          )}
+        </span>
+      ));
+      return (
+        <span key={lineIndex}>
+          {highlightedParts}
+          {lineIndex < correctedLines.length - 1 && <br />}
+        </span>
+      );
+    }
+    
+    // 원본에 없는 새로운 라인 (※ 로 시작하는 권고사항 등)
+    if (line.startsWith('※') || (lineIndex >= originalLines.length && line.trim().length > 0)) {
+      return (
+        <span key={lineIndex}>
+          <span className="bg-green-200 text-green-800 px-0.5 rounded">{line}</span>
+          {lineIndex < correctedLines.length - 1 && <br />}
+        </span>
+      );
+    }
+    
+    return (
+      <span key={lineIndex}>
+        {line}
+        {lineIndex < correctedLines.length - 1 && <br />}
+      </span>
+    );
+  });
+
+  return { originalHighlighted, correctedHighlighted };
+}
+
+// Diff 비교 컴포넌트
+function DiffComparison({ original, corrected }: { original: string; corrected: string }) {
+  const { originalHighlighted, correctedHighlighted } = useMemo(
+    () => highlightDifferences(original, corrected),
+    [original, corrected]
+  );
+
+  return (
+    <div className="mb-4">
+      <h4 className="text-sm font-medium text-gray-700 mb-2">제안된 수정 내용</h4>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-gray-600">📝 원본</p>
+            <span className="text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded">수정 필요 부분</span>
+          </div>
+          <div className="text-sm text-gray-700 leading-relaxed">
+            {originalHighlighted}
+          </div>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-gray-600">✨ 수정 제안</p>
+            <span className="text-xs text-green-500 bg-green-50 px-2 py-0.5 rounded">추가/변경 부분</span>
+          </div>
+          <div className="text-sm text-gray-700 leading-relaxed">
+            {correctedHighlighted}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 bg-red-200 rounded"></span>
+          수정 필요
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 bg-amber-200 rounded"></span>
+          수정 표시
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 bg-green-200 rounded"></span>
+          추가된 내용
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function AnalysisResult({ result, originalContent, onProceed, onRetry, aiScore }: AnalysisResultProps) {
@@ -154,19 +296,7 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
         )}
 
         {result.status === "조건부 승인" && result.correctedContent && (
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">제안된 수정 내용</h4>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="bg-red-50 p-3 rounded border border-red-200">
-                <p className="text-xs font-medium text-red-600 mb-1">원본</p>
-                <p className="text-sm text-gray-700 line-through">{originalContent}</p>
-              </div>
-              <div className="bg-green-50 p-3 rounded border border-green-200">
-                <p className="text-xs font-medium text-green-600 mb-1">수정 제안</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{result.correctedContent}</p>
-              </div>
-            </div>
-          </div>
+          <DiffComparison original={originalContent} corrected={result.correctedContent} />
         )}
       </div>
 
