@@ -21,16 +21,16 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useCompliance } from "@/stores/ComplianceContext";
-import { DraftDocument, DraftStatus, Sector } from "@/data/mockData";
+import { DraftDocument, DraftStatus } from "@/data/mockData";
 
-const sectorIcons: Record<string, React.ReactNode> = {
+const sectorIcons = {
   Bank: <Building2 className="w-4 h-4" />,
   Card: <CreditCard className="w-4 h-4" />,
   Investment: <TrendingUp className="w-4 h-4" />,
   Insurance: <Shield className="w-4 h-4" />,
 };
 
-const sectorLabels: Record<Sector, string> = {
+const sectorLabels = {
   Bank: "은행",
   Card: "카드",
   Investment: "투자",
