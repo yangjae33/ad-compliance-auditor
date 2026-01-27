@@ -85,7 +85,7 @@ export default function DrafterPage() {
             violations.push(`금지 표현 발견: "${match[0]}" - ${expr.description}`);
             suggestions.push(`💡 권장: ${expr.suggestion}`);
           }
-        } catch (e) {
+        } catch {
           // 정규식 오류 시 단순 문자열 검색
           const simplePattern = expr.pattern.replace(/\\/g, "").replace(/\./g, "").replace(/\{.*?\}/g, "").replace(/\|/g, " ");
           if (contentLower.includes(simplePattern.toLowerCase())) {
@@ -159,7 +159,7 @@ export default function DrafterPage() {
           try {
             const regex = new RegExp(expr.pattern, "gi");
             correctedContent = correctedContent?.replace(regex, "[수정 필요]");
-          } catch (e) {
+          } catch {
             // 정규식 오류 시 무시
           }
         });
