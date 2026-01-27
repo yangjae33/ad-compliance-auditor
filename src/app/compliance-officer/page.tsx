@@ -9,13 +9,13 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertTriangle,
   ChevronRight,
   Filter,
   Building2,
   CreditCard,
   TrendingUp,
   Shield,
+  AlertTriangle,
 } from "lucide-react";
 import { useCompliance } from "@/stores/ComplianceContext";
 import { DraftDocument, DraftStatus } from "@/data/mockData";
@@ -137,7 +137,7 @@ export default function ComplianceOfficerPage() {
 
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           <div 
             className="bg-white rounded-xl p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setFilterStatus("consumer_approved")}
@@ -186,22 +186,6 @@ export default function ComplianceOfficerPage() {
               </div>
             </div>
           </div>
-          <div 
-            className="bg-white rounded-xl p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => setFilterStatus("review_requested")}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">수정 요청</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {drafts.filter(d => d.status === "review_requested").length}
-                </p>
-              </div>
-              <div className="bg-orange-100 p-3 rounded-lg">
-                <AlertTriangle className="w-6 h-6 text-orange-600" />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Draft List */}
@@ -236,7 +220,6 @@ export default function ComplianceOfficerPage() {
                 <option value="consumer_approved">검토 대기</option>
                 <option value="approved">승인됨</option>
                 <option value="rejected">반려됨</option>
-                <option value="review_requested">수정 요청</option>
               </select>
               {(filterStatus !== "all" || filterSector !== "all") && (
                 <button
