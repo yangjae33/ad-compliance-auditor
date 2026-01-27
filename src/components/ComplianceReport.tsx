@@ -60,8 +60,8 @@ export default function ComplianceReport({
         },
         body: JSON.stringify({
           to: emailAddress,
-          status: aiReviewResult?.status || (result.status === "Approved" ? "PASS" : "FAIL"),
-          score: aiReviewResult?.score || (result.status === "Approved" ? 100 : 50),
+          status: aiReviewResult?.status || (result.status === "승인" ? "PASS" : "FAIL"),
+          score: aiReviewResult?.score || (result.status === "승인" ? 100 : 50),
           feedback: aiReviewResult?.detailedFeedback || result.suggestions.join("\n"),
           adTitle: adTitle,
           sector: sector,
@@ -107,8 +107,8 @@ export default function ComplianceReport({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-800">Step 5: 컴플라이언스 리포트</h2>
-        <p className="text-gray-600 mt-1">최종 검토 후 승인 또는 거부를 결정해주세요.</p>
+        <h2 className="text-xl font-semibold text-gray-800">컴플라이언스 리포트</h2>
+        <p className="text-gray-600 mt-1">최종 검토 후 기안을 제출해주세요.</p>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
@@ -158,11 +158,10 @@ export default function ComplianceReport({
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-gray-500 mb-2">AI 판정 결과</h4>
               <p className={`text-lg font-semibold ${
-                result.status === "Approved" ? "text-green-600" :
-                result.status === "AutoCorrected" ? "text-yellow-600" : "text-red-600"
+                result.status === "승인" ? "text-green-600" :
+                result.status === "조건부 승인" ? "text-amber-600" : "text-red-600"
               }`}>
-                {result.status === "Approved" ? "승인" :
-                 result.status === "AutoCorrected" ? "조건부 승인 (수정됨)" : "거부"}
+                {result.status}
               </p>
             </div>
           </div>

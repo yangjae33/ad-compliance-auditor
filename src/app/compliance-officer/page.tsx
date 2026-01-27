@@ -36,13 +36,19 @@ const sectorLabels = {
 
 const statusConfig: Record<DraftStatus, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
   pending: {
-    label: "검토 대기",
+    label: "소비자보호부 검토 대기",
     color: "text-yellow-700",
     bgColor: "bg-yellow-100",
     icon: <Clock className="w-4 h-4" />,
   },
+  consumer_approved: {
+    label: "준법감시인 검토 대기",
+    color: "text-blue-700",
+    bgColor: "bg-blue-100",
+    icon: <Clock className="w-4 h-4" />,
+  },
   approved: {
-    label: "승인됨",
+    label: "최종 승인",
     color: "text-green-700",
     bgColor: "bg-green-100",
     icon: <CheckCircle className="w-4 h-4" />,
@@ -63,13 +69,17 @@ const statusConfig: Record<DraftStatus, { label: string; color: string; bgColor:
 
 export default function ComplianceOfficerPage() {
   const router = useRouter();
-  const { drafts, getPendingDraftsCount } = useCompliance();
+  const { drafts, getComplianceOfficerPendingCount } = useCompliance();
   const [filterStatus, setFilterStatus] = useState<DraftStatus | "all">("all");
   const [filterSector, setFilterSector] = useState<Sector | "all">("all");
 
-  const pendingCount = getPendingDraftsCount();
+  // 준법감시인 검토 대기 건수 (consumer_approved 상태)
+  const pendingCount = getComplianceOfficerPendingCount();
 
+  // 준법감시인 대시보드에서는 pending(소비자보호부 심사 대기) 상태는 제외
   const filteredDrafts = drafts.filter(d => {
+    // pending 상태는 준법감시인 대시보드에서 보여주지 않음
+    if (d.status === "pending") return false;
     const statusMatch = filterStatus === "all" || d.status === filterStatus;
     const sectorMatch = filterSector === "all" || d.sector === filterSector;
     return statusMatch && sectorMatch;
@@ -130,17 +140,17 @@ export default function ComplianceOfficerPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div 
             className="bg-white rounded-xl p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => setFilterStatus("pending")}
+            onClick={() => setFilterStatus("consumer_approved")}
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">검토 대기</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {drafts.filter(d => d.status === "pending").length}
+                <p className="text-2xl font-bold text-blue-600">
+                  {drafts.filter(d => d.status === "consumer_approved").length}
                 </p>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-lg">
-                <Clock className="w-6 h-6 text-yellow-600" />
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <Clock className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
@@ -223,7 +233,7 @@ export default function ComplianceOfficerPage() {
                 className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">전체 상태</option>
-                <option value="pending">검토 대기</option>
+                <option value="consumer_approved">검토 대기</option>
                 <option value="approved">승인됨</option>
                 <option value="rejected">반려됨</option>
                 <option value="review_requested">수정 요청</option>

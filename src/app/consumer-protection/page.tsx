@@ -33,13 +33,19 @@ const sectorIcons: Record<Sector, React.ReactNode> = {
 
 const statusConfig: Record<DraftStatus, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
   pending: {
-    label: "검토 대기",
+    label: "소비자보호부 검토 대기",
     color: "text-yellow-700",
     bgColor: "bg-yellow-100",
     icon: <Clock className="w-4 h-4" />,
   },
+  consumer_approved: {
+    label: "소비자보호부 승인",
+    color: "text-blue-700",
+    bgColor: "bg-blue-100",
+    icon: <CheckCircle className="w-4 h-4" />,
+  },
   approved: {
-    label: "승인됨",
+    label: "최종 승인",
     color: "text-green-700",
     bgColor: "bg-green-100",
     icon: <CheckCircle className="w-4 h-4" />,
@@ -222,8 +228,9 @@ export default function ConsumerProtectionPage() {
                     className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
                     <option value="all">전체</option>
-                    <option value="pending">검토 대기</option>
-                    <option value="approved">승인됨</option>
+                    <option value="pending">소비자보호부 검토 대기</option>
+                    <option value="consumer_approved">소비자보호부 승인</option>
+                    <option value="approved">최종 승인</option>
                     <option value="rejected">반려됨</option>
                     <option value="review_requested">수정 요청</option>
                   </select>

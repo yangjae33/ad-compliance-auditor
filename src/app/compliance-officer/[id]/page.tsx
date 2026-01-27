@@ -519,15 +519,15 @@ export default function DraftDetailPage() {
                   <div className="mb-4">
                     <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">AI 분석</h3>
                     <div className={`p-3 rounded-lg ${
-                      draft.analysisResult.status === "Approved" ? "bg-green-100" :
-                      draft.analysisResult.status === "AutoCorrected" ? "bg-yellow-100" : "bg-red-100"
+                      draft.analysisResult.status === "승인" ? "bg-green-100" :
+                      draft.analysisResult.status === "조건부 승인" ? "bg-amber-100" : "bg-red-100"
                     }`}>
                       <p className={`text-sm font-medium ${
-                        draft.analysisResult.status === "Approved" ? "text-green-700" :
-                        draft.analysisResult.status === "AutoCorrected" ? "text-yellow-700" : "text-red-700"
+                        draft.analysisResult.status === "승인" ? "text-green-700" :
+                        draft.analysisResult.status === "조건부 승인" ? "text-amber-700" : "text-red-700"
                       }`}>
-                        {draft.analysisResult.status === "Approved" ? "✓ 승인 권고" :
-                         draft.analysisResult.status === "AutoCorrected" ? "△ 조건부 승인" : "✕ 거부 권고"}
+                        {draft.analysisResult.status === "승인" ? "✓ 승인 권고" :
+                         draft.analysisResult.status === "조건부 승인" ? "△ 조건부 승인 권고" : "✕ 반려 권고"}
                       </p>
                       <p className="text-xs text-gray-600 mt-1">
                         위험도: {draft.analysisResult.riskLevel === "High" ? "높음" : "낮음"}

@@ -40,8 +40,9 @@ const personaRoutes: Record<PersonaType, string> = {
 
 export default function Home() {
   const router = useRouter();
-  const { setCurrentPersona, getPendingDraftsCount } = useCompliance();
-  const pendingCount = getPendingDraftsCount();
+  const { setCurrentPersona, getConsumerProtectionPendingCount, getComplianceOfficerPendingCount } = useCompliance();
+  const consumerProtectionCount = getConsumerProtectionPendingCount();
+  const complianceOfficerCount = getComplianceOfficerPendingCount();
 
   const handleSelectPersona = (personaType: PersonaType) => {
     setCurrentPersona(personaType);
@@ -78,7 +79,11 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {PERSONAS.map((persona) => {
             const colors = personaColors[persona.type];
-            const isPendingVisible = persona.type === "compliance_officer" && pendingCount > 0;
+            // 소비자보호부: pending 상태 건수 표시
+            const isConsumerProtectionPending = persona.type === "consumer_protection" && consumerProtectionCount > 0;
+            // 준법감시인: consumer_approved 상태 건수 표시
+            const isComplianceOfficerPending = persona.type === "compliance_officer" && complianceOfficerCount > 0;
+            const notificationCount = isConsumerProtectionPending ? consumerProtectionCount : isComplianceOfficerPending ? complianceOfficerCount : 0;
             
             return (
               <button
@@ -86,11 +91,11 @@ export default function Home() {
                 onClick={() => handleSelectPersona(persona.type)}
                 className={`relative group p-8 rounded-2xl border-2 ${colors.bg} ${colors.border} transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl text-left`}
               >
-                {/* Notification Badge for Compliance Officer */}
-                {isPendingVisible && (
+                {/* Notification Badge */}
+                {(isConsumerProtectionPending || isComplianceOfficerPending) && (
                   <div className="absolute -top-2 -right-2 flex items-center gap-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
                     <Bell className="w-3 h-3" />
-                    {pendingCount}
+                    {notificationCount}
                   </div>
                 )}
 
@@ -129,21 +134,21 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400 font-bold">
+              <div className="flex-shrink-0 w-8 h-8 bg-teal-500/20 rounded-lg flex items-center justify-center text-teal-400 font-bold">
                 2
               </div>
               <div>
-                <p className="font-medium text-slate-300">준법감시인</p>
-                <p className="text-slate-500 mt-1">기안된 문서를 검토하고 최종 승인 또는 반려 결정을 내립니다.</p>
+                <p className="font-medium text-slate-300">소비자보호부</p>
+                <p className="text-slate-500 mt-1">소비자 관점에서 광고를 검토하고 1차 승인 결정을 내립니다.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-teal-500/20 rounded-lg flex items-center justify-center text-teal-400 font-bold">
+              <div className="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400 font-bold">
                 3
               </div>
               <div>
-                <p className="font-medium text-slate-300">소비자보호부</p>
-                <p className="text-slate-500 mt-1">소비자 관점에서 광고를 검토하고 의견을 제시합니다.</p>
+                <p className="font-medium text-slate-300">준법감시인</p>
+                <p className="text-slate-500 mt-1">소비자보호부 승인 후 최종 승인 또는 반려 결정을 내립니다.</p>
               </div>
             </div>
           </div>
