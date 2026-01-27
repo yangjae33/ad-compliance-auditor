@@ -232,7 +232,7 @@ export default function DrafterPage() {
         content: adData.content,
         correctedContent: analysisResult.correctedContent,
         sector: selectedSector,
-        status: "pending",
+        status: "consumer_approved",
         analysisResult,
         createdBy: "현재 사용자",
         sectorFields: adData.sectorFields,

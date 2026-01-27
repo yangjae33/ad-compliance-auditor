@@ -18,20 +18,13 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useCompliance } from "@/stores/ComplianceContext";
-import { DraftDocument, DraftStatus } from "@/data/mockData";
+import { DraftDocument, DraftStatus, Sector } from "@/data/mockData";
 
-const sectorIcons = {
-  Bank: <Building2 className="w-4 h-4" />,
-  Card: <CreditCard className="w-4 h-4" />,
-  Investment: <TrendingUp className="w-4 h-4" />,
-  Insurance: <Shield className="w-4 h-4" />,
-};
-
-const sectorLabels = {
-  Bank: "은행",
-  Card: "카드",
-  Investment: "투자",
-  Insurance: "보험",
+const sectorIcons: Record<Sector, React.ReactNode> = {
+  "은행": <Building2 className="w-4 h-4" />,
+  "카드": <CreditCard className="w-4 h-4" />,
+  "증권": <TrendingUp className="w-4 h-4" />,
+  "라이프": <Shield className="w-4 h-4" />,
 };
 
 const statusConfig: Record<DraftStatus, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
