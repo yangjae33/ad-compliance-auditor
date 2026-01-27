@@ -350,9 +350,25 @@ export default function DrafterPage() {
     setCurrentStep("report");
   };
 
+  // 뒤로가기 - 데이터 유지하면서 이전 단계로
+  const handleGoBack = () => {
+    switch (currentStep) {
+      case "input":
+        setCurrentStep("sector");
+        break;
+      case "analysis":
+        setCurrentStep("input");
+        // 분석 결과는 유지 (다시 분석 시 덮어씀)
+        break;
+      case "report":
+        setCurrentStep("analysis");
+        break;
+    }
+  };
+
   const handleRetry = () => {
+    // 다시 입력하기 = 뒤로가기와 동일 (데이터 유지)
     setCurrentStep("input");
-    setAnalysisResult(null);
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -518,11 +534,21 @@ export default function DrafterPage() {
           )}
 
           {currentStep === "input" && selectedSector && (
-            <AdInputForm
-              sector={selectedSector}
-              onAnalyze={analyzeAd}
-              isAnalyzing={isAnalyzing}
-            />
+            <div className="space-y-4">
+              <button
+                onClick={handleGoBack}
+                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                <span className="text-sm">그룹사 선택으로 돌아가기</span>
+              </button>
+              <AdInputForm
+                sector={selectedSector}
+                onAnalyze={analyzeAd}
+                isAnalyzing={isAnalyzing}
+                initialData={adData}
+              />
+            </div>
           )}
 
           {currentStep === "analysis" && analysisResult && adData && (
@@ -536,6 +562,13 @@ export default function DrafterPage() {
 
           {currentStep === "report" && analysisResult && selectedSector && adData && (
             <div className="space-y-6">
+              <button
+                onClick={handleGoBack}
+                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                <span className="text-sm">분석 결과로 돌아가기</span>
+              </button>
               <ComplianceReport
                 result={analysisResult}
                 sector={selectedSector}
