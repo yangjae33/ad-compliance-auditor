@@ -69,15 +69,15 @@ Korean Financial Advertisement Regulations to check:
 5. Verify appropriate risk warnings are present
 
 IMPORTANT - Context-aware checking:
-- Words like "반드시", "최대", "최고" are ALLOWED when used in mandatory disclosure contexts such as:
+- Words like "반드시", "최대" are ALLOWED when used in mandatory disclosure contexts such as:
   * "상품설명서를 반드시 확인하세요" (mandatory confirmation request)
   * "약관을 반드시 읽어보세요" (mandatory reading request)
   * "월 최대 1만원 할인" (benefit limit disclosure with condition)
   * "예금자보호법에 따라 보호됩니다" (deposit protection disclosure)
+  * "최고 금리"
 - These words are PROHIBITED only when used to make misleading claims like:
   * "반드시 수익이 납니다" (guaranteed profit - misleading)
-  * "최고의 수익률" without objective evidence (superlative without basis)
-
+  
 - If "예금자보호법" related text is present (e.g., "예금자보호법에 따라", "원금과 이자를 합하여...보호"), do NOT flag it as missing.
 - Focus on actual misleading content, not on mandatory disclosure language.
 
