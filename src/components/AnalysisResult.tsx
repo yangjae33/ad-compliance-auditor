@@ -1,8 +1,8 @@
 "use client";
 
-import { AlertTriangle, CheckCircle, Edit3, XCircle, FileText, History, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle, Edit3, XCircle, FileText, History, Sparkles, Copy, Check } from "lucide-react";
 import { AnalysisResult as AnalysisResultType } from "@/data/mockData";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface AnalysisResultProps {
   result: AnalysisResultType;
@@ -135,6 +135,8 @@ function getDiffHighlight(original: string, corrected: string): { originalHighli
 }
 
 export default function AnalysisResult({ result, originalContent, onProceed, onRetry, aiScore }: AnalysisResultProps) {
+  const [copied, setCopied] = useState(false);
+
   // 차이점 하이라이트 계산
   const diffHighlight = useMemo(() => {
     if (result.correctedContent) {
@@ -142,6 +144,20 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
     }
     return null;
   }, [originalContent, result.correctedContent]);
+
+  // 수정 제안 텍스트 복사
+  const handleCopyCorrection = async () => {
+    if (result.correctedContent) {
+      try {
+        await navigator.clipboard.writeText(result.correctedContent);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    }
+  };
+
   const getStatusConfig = () => {
     switch (result.status) {
       case "반려":
@@ -294,11 +310,24 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
                 </p>
                 <div className="text-sm text-gray-700">{diffHighlight.originalHighlighted}</div>
               </div>
-              <div className="bg-green-50 p-3 rounded border border-green-200">
-                <p className="text-xs font-medium text-green-600 mb-2 flex items-center gap-1">
-                  <span className="inline-block w-3 h-3 bg-green-200 rounded"></span>
-                  수정 제안 (추가/변경 부분)
-                </p>
+              <div className="bg-green-50 p-3 rounded border border-green-200 relative">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-green-600 flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 bg-green-200 rounded"></span>
+                    수정 제안 (추가/변경 부분)
+                  </p>
+                  <button
+                    onClick={handleCopyCorrection}
+                    className="p-1.5 rounded hover:bg-green-100 transition-colors"
+                    title="수정 제안 전체 복사"
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-green-600" />
+                    )}
+                  </button>
+                </div>
                 <div className="text-sm text-gray-700">{diffHighlight.correctedHighlighted}</div>
               </div>
             </div>

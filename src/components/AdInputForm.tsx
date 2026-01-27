@@ -481,7 +481,7 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing, initialDat
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="예: 연 5% 고금리 적금 출시!"
+            placeholder="예: 연 8% 고금리 적금 출시!"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           />

@@ -327,38 +327,19 @@ export default function DrafterPage() {
     const missingFields: string[] = [];
 
     if (similarProduct) {
-      // 필수 고지사항 체크
-      const fieldChecks = [
-        { field: "예금자보호", pattern: /예금자보호법|보호됩니다/i, value: similarProduct.deposit_protection },
-        { field: "지급제한사항", pattern: /압류|가압류|질권/i, value: similarProduct.payout_restrictions },
-        { field: "자료열람권", pattern: /자료.*열람|열람.*요구/i, value: similarProduct.data_access_right },
-        { field: "유의사항", pattern: /상품설명서.*참조|고객.*센터/i, value: similarProduct.important_notes },
+      // 필수 고지사항만 체크 (법적 의무 사항)
+      const mandatoryFieldChecks = [
+        { field: "예금자보호", pattern: /예금자보호법|보호됩니다|보호.*대상/i, value: similarProduct.deposit_protection },
+        { field: "지급제한사항", pattern: /압류|가압류|질권|지급.*제한/i, value: similarProduct.payout_restrictions },
+        { field: "자료열람권", pattern: /자료.*열람|열람.*요구|권리.*구제/i, value: similarProduct.data_access_right },
+        { field: "유의사항", pattern: /상품설명서.*참조|고객.*센터|반드시.*확인/i, value: similarProduct.important_notes },
       ];
 
-      fieldChecks.forEach(({ field, pattern, value }) => {
+      mandatoryFieldChecks.forEach(({ field, pattern, value }) => {
         if (value && !pattern.test(fullContent)) {
           missingFields.push(`${field}: ${value}`);
         }
       });
-
-      // 기본 정보 체크
-      if (similarProduct.target_audience && !contentLower.includes("가입대상") && !contentLower.includes("대상")) {
-        missingFields.push(`가입대상: ${similarProduct.target_audience}`);
-      }
-      if (similarProduct.term && !contentLower.includes("가입기간") && !contentLower.includes("기간")) {
-        missingFields.push(`가입기간: ${similarProduct.term}`);
-      }
-      if (similarProduct.savings_limit && !contentLower.includes("저축한도") && !contentLower.includes("한도")) {
-        missingFields.push(`저축한도: ${similarProduct.savings_limit}`);
-      }
-      if (similarProduct.interest_rates) {
-        if (similarProduct.interest_rates.base_rate && !contentLower.includes("기본금리")) {
-          missingFields.push(`기본금리: ${similarProduct.interest_rates.base_rate}`);
-        }
-        if (similarProduct.interest_rates.max_rate && !contentLower.includes("최고금리")) {
-          missingFields.push(`최고금리: ${similarProduct.interest_rates.max_rate}`);
-        }
-      }
     }
 
     let status: AnalysisResult["status"];
