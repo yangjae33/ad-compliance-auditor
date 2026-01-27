@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowLeft, FileEdit, Send, CheckCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, FileEdit, Send, CheckCircle, BookOpen } from "lucide-react";
 import SectorSelector from "@/components/SectorSelector";
 import AdInputForm, { AdFormData } from "@/components/AdInputForm";
 import AnalysisResultComponent from "@/components/AnalysisResult";
 import ComplianceReport from "@/components/ComplianceReport";
+import SectorGuidelinePanel from "@/components/SectorGuidelinePanel";
 import { useCompliance } from "@/stores/ComplianceContext";
 import {
   Sector,
   AnalysisResult,
   REGULATIONS,
   HISTORY_RAG,
+  SECTOR_GUIDELINES,
 } from "@/data/mockData";
 
 type Step = "sector" | "input" | "analysis" | "report" | "submitted";
@@ -27,6 +29,7 @@ export default function DrafterPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [adData, setAdData] = useState<AdFormData | null>(null);
   const [submittedDraftId, setSubmittedDraftId] = useState<string | null>(null);
+  const [showGuideline, setShowGuideline] = useState(false);
 
   const handleSectorSelect = (sector: Sector) => {
     setSelectedSector(sector);
@@ -45,12 +48,16 @@ export default function DrafterPage() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const regulation = REGULATIONS.find((r) => r.sector === selectedSector);
+    const guideline = selectedSector ? SECTOR_GUIDELINES[selectedSector] : null;
     const violations: string[] = [];
     const suggestions: string[] = [];
     let matchedHistory = null;
 
+    const fullContent = (data.title + " " + data.content);
+    const contentLower = fullContent.toLowerCase();
+
+    // 기존 규정 기반 검사
     if (regulation) {
-      const contentLower = (data.title + " " + data.content).toLowerCase();
       regulation.keywords.forEach((keyword) => {
         if (contentLower.includes(keyword.toLowerCase())) {
           violations.push(`금지 키워드 발견: "${keyword}"`);
@@ -68,10 +75,61 @@ export default function DrafterPage() {
       }
     }
 
+    // 업종별 가이드라인 기반 금지 표현 검사
+    if (guideline) {
+      guideline.prohibitedExpressions.forEach((expr) => {
+        try {
+          const regex = new RegExp(expr.pattern, "gi");
+          const match = fullContent.match(regex);
+          if (match) {
+            violations.push(`금지 표현 발견: "${match[0]}" - ${expr.description}`);
+            suggestions.push(`💡 권장: ${expr.suggestion}`);
+          }
+        } catch (e) {
+          // 정규식 오류 시 단순 문자열 검색
+          const simplePattern = expr.pattern.replace(/\\/g, "").replace(/\./g, "").replace(/\{.*?\}/g, "").replace(/\|/g, " ");
+          if (contentLower.includes(simplePattern.toLowerCase())) {
+            violations.push(`금지 표현 발견: "${simplePattern}" - ${expr.description}`);
+            suggestions.push(`💡 권장: ${expr.suggestion}`);
+          }
+        }
+      });
+
+      // 필수 문구 누락 검사
+      guideline.mandatoryStatements.forEach((stmt) => {
+        // 조건부 필수 문구는 제외 (실제 구현에서는 조건 체크 로직 필요)
+        if (!stmt.condition) {
+          const stmtKeywords = stmt.content.split(" ").filter(w => w.length > 3);
+          const hasStatement = stmtKeywords.some(keyword => 
+            contentLower.includes(keyword.toLowerCase())
+          );
+          if (!hasStatement) {
+            suggestions.push(`필수 문구 권장: "${stmt.content.substring(0, 50)}..."`);
+          }
+        }
+      });
+
+      // 필수 체크리스트 항목 검사
+      const requiredItems = guideline.checklist.filter(item => item.required);
+      requiredItems.forEach((item) => {
+        // 체크리스트 항목과 관련된 내용이 있는지 간단히 검사
+        const itemKeywords = item.item.split(" ").filter(w => w.length > 2);
+        const hasRelatedContent = itemKeywords.some(keyword =>
+          contentLower.includes(keyword.toLowerCase()) || 
+          Object.keys(data.sectorFields).some(field => 
+            field.toLowerCase().includes(keyword.toLowerCase()) && data.sectorFields[field]
+          )
+        );
+        if (!hasRelatedContent) {
+          suggestions.push(`체크리스트 확인 필요: ${item.item}`);
+        }
+      });
+    }
+
+    // 과거 이력 매칭
     const historyMatch = HISTORY_RAG.find((history) => {
       const historyWords = history.content.toLowerCase().split(" ");
-      const contentWords = (data.title + " " + data.content).toLowerCase();
-      return historyWords.some((word) => word.length > 2 && contentWords.includes(word));
+      return historyWords.some((word) => word.length > 2 && contentLower.includes(word));
     });
 
     if (historyMatch && historyMatch.result === "Rejected") {
@@ -96,10 +154,20 @@ export default function DrafterPage() {
         });
         correctedContent += `\n\n※ ${regulation.suggestion}`;
       }
+      if (guideline) {
+        guideline.prohibitedExpressions.forEach((expr) => {
+          try {
+            const regex = new RegExp(expr.pattern, "gi");
+            correctedContent = correctedContent?.replace(regex, "[수정 필요]");
+          } catch (e) {
+            // 정규식 오류 시 무시
+          }
+        });
+      }
     } else if (suggestions.length > 0) {
       status = "AutoCorrected";
       riskLevel = "Low";
-      correctedContent = data.content + `\n\n※ ${suggestions.join(", ")}`;
+      correctedContent = data.content + `\n\n※ 권장사항:\n${suggestions.slice(0, 3).join("\n")}`;
     } else {
       status = "Approved";
       riskLevel = "Low";
@@ -152,6 +220,7 @@ export default function DrafterPage() {
     setAnalysisResult(null);
     setAdData(null);
     setSubmittedDraftId(null);
+    setShowGuideline(false);
   };
 
   const steps = [
@@ -167,7 +236,7 @@ export default function DrafterPage() {
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <button
@@ -184,15 +253,30 @@ export default function DrafterPage() {
                 <p className="text-sm text-gray-500">광고 컴플라이언스 검사 및 기안 제출</p>
               </div>
             </div>
-            <div className="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">
-              광고 심의 기안자
+            <div className="flex items-center space-x-3">
+              {selectedSector && currentStep !== "submitted" && (
+                <button
+                  onClick={() => setShowGuideline(!showGuideline)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                    showGuideline
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span className="text-sm font-medium">가이드라인</span>
+                </button>
+              )}
+              <div className="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">
+                광고 심의 기안자
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Progress Steps */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {currentStep !== "submitted" && (
           <div className="flex items-center justify-between mb-8">
             {steps.map((step, index) => (
@@ -221,8 +305,10 @@ export default function DrafterPage() {
           </div>
         )}
 
-        {/* Main Content */}
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+        {/* Main Content with Guideline Panel */}
+        <div className={`flex gap-6 ${showGuideline && selectedSector ? "" : ""}`}>
+          {/* Main Content */}
+          <div className={`bg-white rounded-xl shadow-lg p-6 md:p-8 ${showGuideline && selectedSector ? "flex-1" : "w-full"}`}>
           {currentStep === "sector" && (
             <div className="space-y-6">
               <SectorSelector
@@ -316,6 +402,16 @@ export default function DrafterPage() {
                 >
                   홈으로 돌아가기
                 </button>
+              </div>
+            </div>
+          )}
+          </div>
+
+          {/* Guideline Panel */}
+          {showGuideline && selectedSector && currentStep !== "submitted" && (
+            <div className="w-96 flex-shrink-0">
+              <div className="sticky top-4">
+                <SectorGuidelinePanel sector={selectedSector} />
               </div>
             </div>
           )}
