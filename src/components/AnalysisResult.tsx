@@ -159,7 +159,7 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-red-50 p-3 rounded border border-red-200">
                 <p className="text-xs font-medium text-red-600 mb-1">원본</p>
-                <p className="text-sm text-gray-700 line-through">{originalContent}</p>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{originalContent}</p>
               </div>
               <div className="bg-green-50 p-3 rounded border border-green-200">
                 <p className="text-xs font-medium text-green-600 mb-1">수정 제안</p>
