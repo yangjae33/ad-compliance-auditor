@@ -25,17 +25,10 @@ import { useCompliance } from "@/stores/ComplianceContext";
 import { DraftDocument, DraftStatus, Sector } from "@/data/mockData";
 
 const sectorIcons: Record<Sector, React.ReactNode> = {
-  Bank: <Building2 className="w-4 h-4" />,
-  Card: <CreditCard className="w-4 h-4" />,
-  Investment: <TrendingUp className="w-4 h-4" />,
-  Insurance: <Shield className="w-4 h-4" />,
-};
-
-const sectorLabels: Record<Sector, string> = {
-  Bank: "은행",
-  Card: "카드",
-  Investment: "투자",
-  Insurance: "보험",
+  은행: <Building2 className="w-4 h-4" />,
+  카드: <CreditCard className="w-4 h-4" />,
+  증권: <TrendingUp className="w-4 h-4" />,
+  라이프: <Shield className="w-4 h-4" />,
 };
 
 const statusConfig: Record<DraftStatus, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
@@ -268,7 +261,7 @@ export default function ConsumerProtectionPage() {
                               </span>
                               <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                                 {sectorIcons[draft.sector]}
-                                {sectorLabels[draft.sector]}
+                                {draft.sector}
                               </span>
                             </div>
                             <h3 className="font-medium text-gray-800 mb-1">{draft.title}</h3>
@@ -400,7 +393,7 @@ export default function ConsumerProtectionPage() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-gray-500 mt-8">
-          <p>Smart Compliance Auditor v2.0 - 소비자보호부 모드</p>
+          <p>Blue Pen v1.0 - 소비자보호부 모드</p>
         </footer>
       </div>
     </main>

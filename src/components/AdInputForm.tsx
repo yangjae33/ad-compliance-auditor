@@ -138,7 +138,7 @@ ${product.deposit_protection}`;
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-800">Step 1 & 2: 광고 입력 및 분류</h2>
-        <p className="text-gray-600 mt-1">광고 정보를 입력하면 {sector} 업종 규정에 따라 분류됩니다.</p>
+        <p className="text-gray-600 mt-1">광고 정보를 입력하면 {sector} 그룹사 규정에 따라 분류됩니다.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

@@ -75,7 +75,7 @@ export default function DrafterPage() {
       }
     }
 
-    // 업종별 가이드라인 기반 금지 표현 검사
+    // 그룹사별 가이드라인 기반 금지 표현 검사
     if (guideline) {
       guideline.prohibitedExpressions.forEach((expr) => {
         try {
@@ -224,7 +224,7 @@ export default function DrafterPage() {
   };
 
   const steps = [
-    { key: "sector", label: "업종 선택" },
+    { key: "sector", label: "그룹사 선택" },
     { key: "input", label: "광고 입력" },
     { key: "analysis", label: "분석 결과" },
     { key: "report", label: "리포트" },
@@ -419,7 +419,7 @@ export default function DrafterPage() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-gray-500 mt-8">
-          <p>Smart Compliance Auditor v2.0 - 광고 심의 기안자 모드</p>
+          <p>Blue Pen v1.0 - 광고 심의 기안자 모드</p>
         </footer>
       </div>
     </main>

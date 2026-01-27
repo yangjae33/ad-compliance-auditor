@@ -103,7 +103,7 @@ export default function SectorGuidelinePanel({
           </div>
           <div>
             <h3 className="text-lg font-bold text-white">
-              {guideline.name} 업종 광고 가이드라인
+              {guideline.name} 그룹사 광고 가이드라인
             </h3>
             <p className="text-blue-100 text-sm">
               심의 기준 및 필수 확인 사항
