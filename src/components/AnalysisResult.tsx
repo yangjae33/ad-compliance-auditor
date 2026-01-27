@@ -2,6 +2,7 @@
 
 import { AlertTriangle, CheckCircle, Edit3, XCircle, FileText, History, Sparkles } from "lucide-react";
 import { AnalysisResult as AnalysisResultType } from "@/data/mockData";
+import { useMemo } from "react";
 
 interface AnalysisResultProps {
   result: AnalysisResultType;
@@ -11,7 +12,136 @@ interface AnalysisResultProps {
   aiScore?: number;
 }
 
+// 두 텍스트의 차이점을 찾아 하이라이트하는 함수
+function getDiffHighlight(original: string, corrected: string): { originalHighlighted: React.ReactNode; correctedHighlighted: React.ReactNode } {
+  const originalLines = original.split("\n");
+  const correctedLines = corrected.split("\n");
+
+  // 원본에서 삭제/변경된 부분 찾기
+  const originalHighlighted = originalLines.map((line, idx) => {
+    const correctedLine = correctedLines[idx];
+
+    // 해당 줄이 수정본에 없거나 다른 경우
+    if (!correctedLine || line !== correctedLine) {
+      // [수정 필요] 패턴이 수정본에 있는지 확인
+      const hasModification = correctedLine && correctedLine.includes("[수정 필요]");
+
+      // 줄이 완전히 삭제된 경우
+      if (!correctedLine && idx >= correctedLines.length) {
+        return (
+          <span key={idx} className="block">
+            {line}
+          </span>
+        );
+      }
+
+      // 줄 내용이 변경된 경우 - 변경된 부분 하이라이트
+      if (correctedLine && line !== correctedLine) {
+        // 단어 단위로 비교
+        const originalWords = line.split(/(\s+)/);
+        const correctedWords = correctedLine.split(/(\s+)/);
+
+        const highlightedWords = originalWords.map((word, wIdx) => {
+          const correctedWord = correctedWords[wIdx];
+          if (word !== correctedWord && word.trim()) {
+            return (
+              <span key={wIdx} className="bg-red-200 text-red-800 line-through font-medium px-0.5 rounded">
+                {word}
+              </span>
+            );
+          }
+          return <span key={wIdx}>{word}</span>;
+        });
+
+        return (
+          <span key={idx} className="block">
+            {highlightedWords}
+          </span>
+        );
+      }
+
+      if (hasModification) {
+        return (
+          <span key={idx} className="block bg-red-100 text-red-700 line-through">
+            {line}
+          </span>
+        );
+      }
+    }
+
+    return <span key={idx} className="block">{line}</span>;
+  });
+
+  // 수정본에서 추가/변경된 부분 찾기
+  const correctedHighlighted = correctedLines.map((line, idx) => {
+    const originalLine = originalLines[idx];
+
+    // 새로 추가된 줄
+    if (idx >= originalLines.length) {
+      return (
+        <span key={idx} className="block bg-green-200 text-green-800 font-semibold px-1 rounded">
+          {line}
+        </span>
+      );
+    }
+
+    // 줄 내용이 변경된 경우
+    if (originalLine !== line) {
+      // [수정 필요] 패턴 하이라이트
+      if (line.includes("[수정 필요]")) {
+        const parts = line.split(/(\[수정 필요\])/g);
+        return (
+          <span key={idx} className="block">
+            {parts.map((part, pIdx) =>
+              part === "[수정 필요]" ? (
+                <span key={pIdx} className="bg-yellow-300 text-yellow-900 font-bold px-1 rounded">
+                  {part}
+                </span>
+              ) : (
+                <span key={pIdx}>{part}</span>
+              )
+            )}
+          </span>
+        );
+      }
+
+      // 단어 단위로 비교하여 변경된 부분 하이라이트
+      const originalWords = originalLine.split(/(\s+)/);
+      const correctedWords = line.split(/(\s+)/);
+
+      const highlightedWords = correctedWords.map((word, wIdx) => {
+        const originalWord = originalWords[wIdx];
+        if (word !== originalWord && word.trim()) {
+          return (
+            <span key={wIdx} className="bg-green-200 text-green-800 font-semibold px-0.5 rounded">
+              {word}
+            </span>
+          );
+        }
+        return <span key={wIdx}>{word}</span>;
+      });
+
+      return (
+        <span key={idx} className="block">
+          {highlightedWords}
+        </span>
+      );
+    }
+
+    return <span key={idx} className="block">{line}</span>;
+  });
+
+  return { originalHighlighted, correctedHighlighted };
+}
+
 export default function AnalysisResult({ result, originalContent, onProceed, onRetry, aiScore }: AnalysisResultProps) {
+  // 차이점 하이라이트 계산
+  const diffHighlight = useMemo(() => {
+    if (result.correctedContent) {
+      return getDiffHighlight(originalContent, result.correctedContent);
+    }
+    return null;
+  }, [originalContent, result.correctedContent]);
   const getStatusConfig = () => {
     switch (result.status) {
       case "반려":
@@ -153,18 +283,38 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
           </div>
         )}
 
-        {result.status === "조건부 승인" && result.correctedContent && (
+        {result.status === "조건부 승인" && result.correctedContent && diffHighlight && (
           <div className="mb-4">
             <h4 className="text-sm font-medium text-gray-700 mb-2">제안된 수정 내용</h4>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-red-50 p-3 rounded border border-red-200">
-                <p className="text-xs font-medium text-red-600 mb-1">원본</p>
-                <p className="text-sm text-gray-700 line-through">{originalContent}</p>
+                <p className="text-xs font-medium text-red-600 mb-2 flex items-center gap-1">
+                  <span className="inline-block w-3 h-3 bg-red-200 rounded"></span>
+                  원본 (삭제/변경 부분)
+                </p>
+                <div className="text-sm text-gray-700">{diffHighlight.originalHighlighted}</div>
               </div>
               <div className="bg-green-50 p-3 rounded border border-green-200">
-                <p className="text-xs font-medium text-green-600 mb-1">수정 제안</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{result.correctedContent}</p>
+                <p className="text-xs font-medium text-green-600 mb-2 flex items-center gap-1">
+                  <span className="inline-block w-3 h-3 bg-green-200 rounded"></span>
+                  수정 제안 (추가/변경 부분)
+                </p>
+                <div className="text-sm text-gray-700">{diffHighlight.correctedHighlighted}</div>
               </div>
+            </div>
+            <div className="mt-2 flex gap-4 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-red-200 rounded"></span>
+                삭제됨
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-green-200 rounded"></span>
+                추가됨
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-yellow-300 rounded"></span>
+                수정 필요
+              </span>
             </div>
           </div>
         )}

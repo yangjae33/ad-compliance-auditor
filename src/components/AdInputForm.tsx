@@ -7,16 +7,48 @@ import { Sector, SECTOR_FIELDS, PRODUCTS } from "@/data/mockData";
 interface Product {
   id: string;
   product_name: string;
+  target_audience?: string;
+  term?: string;
+  savings_limit?: string;
+  interest_payment_method?: string;
+  partial_withdrawal_allowed?: string;
+  joint_name_allowed?: boolean;
+  reinvestment_allowed?: boolean;
+  interest_rates?: {
+    base_rate?: string;
+    max_rate?: string;
+  };
   payout_restrictions: string;
   data_access_right: string;
   important_notes: string;
   deposit_protection: string;
 }
 
+// 필드명 영어 -> 한글 매핑
+const productFieldLabels: Record<string, string> = {
+  id: "상품코드",
+  product_name: "상품명",
+  target_audience: "가입대상",
+  term: "가입기간",
+  savings_limit: "저축한도",
+  interest_payment_method: "이자지급방식",
+  partial_withdrawal_allowed: "중도해지",
+  joint_name_allowed: "공동명의",
+  reinvestment_allowed: "재예치",
+  interest_rates: "금리",
+  base_rate: "기본금리",
+  max_rate: "최고금리",
+  payout_restrictions: "지급제한사항",
+  data_access_right: "자료열람권",
+  important_notes: "유의사항",
+  deposit_protection: "예금자보호",
+};
+
 interface AdInputFormProps {
   sector: Sector;
   onAnalyze: (data: AdFormData) => void;
   isAnalyzing: boolean;
+  initialData?: AdFormData | null;
 }
 
 export interface AdFormData {
@@ -26,12 +58,12 @@ export interface AdFormData {
   sectorFields: Record<string, boolean>;
 }
 
-export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputFormProps) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+export default function AdInputForm({ sector, onAnalyze, isAnalyzing, initialData }: AdInputFormProps) {
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [content, setContent] = useState(initialData?.content || "");
+  const [imageFile, setImageFile] = useState<File | null>(initialData?.imageFile || null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [sectorFields, setSectorFields] = useState<Record<string, boolean>>({});
+  const [sectorFields, setSectorFields] = useState<Record<string, boolean>>(initialData?.sectorFields || {});
   const [isAutoFilling, setIsAutoFilling] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,16 +102,43 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
     setShowProductModal(false);
     setProductSearchQuery("");
 
-    // Auto-fill mandatory disclosure text
-    const mandatoryText = `${product.payout_restrictions}
+    // Auto-fill title with product name
+    setTitle(product.product_name);
 
-${product.data_access_right}
+    // 모든 필드를 한글 필드명: 값 형식으로 변환
+    const formatProductFields = (prod: Product): string => {
+      const lines: string[] = [];
 
-${product.important_notes}
+      // 기본 정보
+      if (prod.id) lines.push(`${productFieldLabels.id}: ${prod.id}`);
+      if (prod.product_name) lines.push(`${productFieldLabels.product_name}: ${prod.product_name}`);
+      if (prod.target_audience) lines.push(`${productFieldLabels.target_audience}: ${prod.target_audience}`);
+      if (prod.term) lines.push(`${productFieldLabels.term}: ${prod.term}`);
+      if (prod.savings_limit) lines.push(`${productFieldLabels.savings_limit}: ${prod.savings_limit}`);
+      if (prod.interest_payment_method) lines.push(`${productFieldLabels.interest_payment_method}: ${prod.interest_payment_method}`);
+      if (prod.partial_withdrawal_allowed) lines.push(`${productFieldLabels.partial_withdrawal_allowed}: ${prod.partial_withdrawal_allowed}`);
+      if (prod.joint_name_allowed !== undefined) lines.push(`${productFieldLabels.joint_name_allowed}: ${prod.joint_name_allowed ? "가능" : "불가"}`);
+      if (prod.reinvestment_allowed !== undefined) lines.push(`${productFieldLabels.reinvestment_allowed}: ${prod.reinvestment_allowed ? "가능" : "불가"}`);
 
-${product.deposit_protection}`;
+      // 금리 정보
+      if (prod.interest_rates) {
+        if (prod.interest_rates.base_rate) lines.push(`${productFieldLabels.base_rate}: ${prod.interest_rates.base_rate}`);
+        if (prod.interest_rates.max_rate) lines.push(`${productFieldLabels.max_rate}: ${prod.interest_rates.max_rate}`);
+      }
 
-    setContent((prev) => (prev ? `${prev}\n\n${mandatoryText}` : mandatoryText));
+      // 필수 고지사항
+      lines.push(""); // 빈 줄 추가
+      lines.push("【필수 고지사항】");
+      if (prod.payout_restrictions) lines.push(`${productFieldLabels.payout_restrictions}: ${prod.payout_restrictions}`);
+      if (prod.data_access_right) lines.push(`${productFieldLabels.data_access_right}: ${prod.data_access_right}`);
+      if (prod.important_notes) lines.push(`${productFieldLabels.important_notes}: ${prod.important_notes}`);
+      if (prod.deposit_protection) lines.push(`${productFieldLabels.deposit_protection}: ${prod.deposit_protection}`);
+
+      return lines.join("\n");
+    };
+
+    const productContent = formatProductFields(product);
+    setContent(productContent);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,28 +188,25 @@ ${product.deposit_protection}`;
       if (result.success && result.data) {
         const data = result.data;
 
-        // Set product name as title
+        // OCR로 추출한 상품명을 제목으로 설정
         setTitle(data.productName || "");
 
-        // Build content from extracted data
-        let contentText = data.description || data.extractedText || "";
+        // OCR로 추출한 텍스트만 광고 내용에 설정 (순수 텍스트 추출)
+        let contentText = "";
 
-        // Add extracted details if available
+        // 추출된 상세 정보가 있으면 추가
         const details: string[] = [];
         if (data.interestRate) details.push(`금리: ${data.interestRate}`);
         if (data.period) details.push(`가입기간: ${data.period}`);
         if (data.targetAudience) details.push(`가입대상: ${data.targetAudience}`);
 
         if (details.length > 0) {
-          contentText = `${details.join(" | ")}\n\n${contentText}`;
+          contentText = details.join("\n") + "\n\n";
         }
 
-        // Add missing requirements as editable placeholders
-        if (data.missingRequirements && data.missingRequirements.length > 0) {
-          const missingItems = data.missingRequirements
-            .map((item: string) => `[수정필요] ${item}`)
-            .join("\n");
-          contentText = `${contentText}\n\n※ 누락된 필수 항목 (수정 필요):\n${missingItems}`;
+        // OCR로 추출한 텍스트 추가
+        if (data.description || data.extractedText) {
+          contentText += data.description || data.extractedText;
         }
 
         setContent(contentText);

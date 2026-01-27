@@ -288,14 +288,14 @@ export const BANK_GUIDELINE: SectorGuideline = {
     },
     {
       id: "bank-p2",
-      pattern: "최고|최상|최저|최초|최대|1위|제일|유일",
+      pattern: "최상|최저|최초|1위|제일|유일",
       description: "객관적 근거 없는 최상급 표현 사용",
       regulation: "은행 광고심의 기준 제17조 제5호",
       suggestion: "객관적 근거가 있는 사실이나 공인된 자료를 명시하세요.",
     },
     {
       id: "bank-p3",
-      pattern: "무조건|반드시|확실",
+      pattern: "무조건|확실",
       description: "거래조건이 달리 적용될 수 있음에도 확정적으로 표시",
       regulation: "은행 광고심의 기준 제17조 제4호",
       suggestion: "'조건에 따라 달라질 수 있습니다' 문구 추가",
