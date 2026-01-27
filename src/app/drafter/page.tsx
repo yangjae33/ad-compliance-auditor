@@ -15,6 +15,7 @@ import {
   REGULATIONS,
   HISTORY_RAG,
   SECTOR_GUIDELINES,
+  PRODUCTS,
 } from "@/data/mockData";
 
 type Step = "sector" | "input" | "analysis" | "report" | "submitted";
@@ -66,16 +67,115 @@ export default function DrafterPage() {
     const fullContent = (data.title + " " + data.content);
     const contentLower = fullContent.toLowerCase();
 
+    // 금융 용어로서 허용되는 단어 조합 (이 패턴은 금지 표현에서 제외)
+    const allowedFinancialTerms = [
+      "최고금리", "최저금리", "기본금리", "우대금리", "적용금리",
+      "최고이율", "최저이율", "연이율",
+      "최대한도", "최소한도", "저축한도",
+      "최대.*%", "최고.*%",  // 숫자와 함께 쓰인 경우
+      "금리.*최고", "금리.*최대",
+      "이자율.*최고", "이자율.*최대",
+    ];
+
+    // 허용되는 필수 문구 패턴 (이 패턴이 포함된 문장은 금지 표현 검사에서 제외)
+    const allowedMandatoryPatterns = [
+      "상품설명서.*반드시",
+      "약관.*반드시",
+      "투자설명서.*반드시",
+      "반드시.*확인",
+      "반드시.*읽어보",
+      "반드시.*참조",
+      "반드시.*문의",
+      "예금자보호법에 따라",
+      "예금자보호법.*보호",
+      "원금과.*이자.*합하여.*보호",
+      "5천만원.*보호|1억원.*보호",
+      "월.*최대.*원",  // 혜택 한도 표시
+      "최대.*적립|최대.*할인|최대.*혜택",  // 혜택 조건 표시
+    ];
+
+    // 금융 용어인지 확인하는 함수
+    const isFinancialTerm = (matchedText: string, content: string): boolean => {
+      const lowerContent = content.toLowerCase();
+      const lowerMatch = matchedText.toLowerCase();
+
+      // 매칭된 텍스트 주변 확인 (앞 10자, 뒤 10자)
+      const matchIndex = lowerContent.indexOf(lowerMatch);
+      if (matchIndex === -1) return false;
+
+      const start = Math.max(0, matchIndex - 10);
+      const end = Math.min(content.length, matchIndex + lowerMatch.length + 10);
+      const context = content.substring(start, end);
+
+      // 금융 용어 패턴 체크
+      return allowedFinancialTerms.some(term => {
+        try {
+          const regex = new RegExp(term, "i");
+          return regex.test(context);
+        } catch {
+          return context.includes(term);
+        }
+      });
+    };
+
+    // 문맥이 허용 패턴에 해당하는지 확인하는 함수
+    const isInAllowedContext = (matchedText: string, content: string): boolean => {
+      // 먼저 금융 용어인지 확인
+      if (isFinancialTerm(matchedText, content)) {
+        return true;
+      }
+
+      // 매칭된 텍스트 주변 문맥 추출 (앞뒤 50자)
+      const matchIndex = content.toLowerCase().indexOf(matchedText.toLowerCase());
+      if (matchIndex === -1) return false;
+
+      const start = Math.max(0, matchIndex - 50);
+      const end = Math.min(content.length, matchIndex + matchedText.length + 50);
+      const context = content.substring(start, end).toLowerCase();
+
+      return allowedMandatoryPatterns.some(pattern => {
+        try {
+          const regex = new RegExp(pattern, "i");
+          return regex.test(context);
+        } catch {
+          return context.includes(pattern.replace(/\.\*/g, ""));
+        }
+      });
+    };
+
     // 기존 규정 기반 검사
     if (regulation) {
       regulation.keywords.forEach((keyword) => {
         if (contentLower.includes(keyword.toLowerCase())) {
-          violations.push(`금지 키워드 발견: "${keyword}"`);
+          // 허용된 문맥인지 확인
+          if (!isInAllowedContext(keyword, fullContent)) {
+            violations.push(`금지 키워드 발견: "${keyword}"`);
+          }
         }
       });
 
+      // 예금자보호법 문구 검사 개선
       regulation.required.forEach((req) => {
-        if (!data.sectorFields[req] && !contentLower.includes(req.toLowerCase())) {
+        if (req === "예금자보호법 문구") {
+          // 실제 예금자보호법 관련 문구가 있는지 확인
+          const depositProtectionPatterns = [
+            "예금자보호법에 따라",
+            "예금자보호법.*보호",
+            "원금과.*이자.*보호",
+            "5천만원.*보호",
+            "1억원.*보호",
+          ];
+          const hasDepositProtection = depositProtectionPatterns.some(pattern => {
+            try {
+              return new RegExp(pattern, "i").test(fullContent);
+            } catch {
+              return contentLower.includes(pattern.replace(/\.\*/g, ""));
+            }
+          });
+          if (!hasDepositProtection && !data.sectorFields[req]) {
+            suggestions.push(`필수 포함 사항 누락: "${req}"`);
+          }
+        } else if (!data.sectorFields[req] && !contentLower.includes(req.toLowerCase())) {
           suggestions.push(`필수 포함 사항 누락: "${req}"`);
         }
       });
@@ -126,33 +226,85 @@ export default function DrafterPage() {
         }
       });
 
-      // 필수 문구 누락 검사
+      // 필수 문구 누락 검사 (개선된 버전)
       guideline.mandatoryStatements.forEach((stmt) => {
-        // 조건부 필수 문구는 제외 (실제 구현에서는 조건 체크 로직 필요)
+        // 조건부 필수 문구는 제외
         if (!stmt.condition) {
-          const stmtKeywords = stmt.content.split(" ").filter(w => w.length > 3);
-          const hasStatement = stmtKeywords.some(keyword => 
+          // 핵심 키워드 기반 검사 (더 정확한 매칭)
+          const coreKeywords = stmt.content
+            .replace(/[.,]/g, "")
+            .split(" ")
+            .filter(w => w.length > 2 && !["및", "을", "를", "에", "의", "가", "이", "은", "는"].includes(w));
+
+          // 핵심 키워드 중 60% 이상이 포함되어야 함
+          const matchCount = coreKeywords.filter(keyword =>
             contentLower.includes(keyword.toLowerCase())
-          );
-          if (!hasStatement) {
+          ).length;
+
+          const matchRatio = coreKeywords.length > 0 ? matchCount / coreKeywords.length : 0;
+
+          if (matchRatio < 0.6) {
             suggestions.push(`필수 문구 권장: "${stmt.content.substring(0, 50)}..."`);
           }
         }
       });
 
-      // 필수 체크리스트 항목 검사
+      // 체크리스트 항목별 실제 검사 패턴 매핑
+      const checklistPatterns: Record<string, string[]> = {
+        // 은행 명칭 관련
+        "은행 명칭 표시": ["은행", "신한", "국민", "우리", "하나", "기업", "농협", "SC", "씨티"],
+        "은행 명칭": ["은행", "신한", "국민", "우리", "하나", "기업", "농협"],
+        // 심의필 관련
+        "광고심의필 번호": ["심의필", "심의번호", "광고심의"],
+        "유효기간 표시": ["유효기간", "~까지", "년.*월.*일"],
+        // 금리 관련
+        "이자율 범위": ["금리", "이자율", "이율", "%", "연"],
+        "이자율 정보": ["금리", "이자율", "이율", "%"],
+        "연체이자율": ["연체", "지연이자", "연체이자"],
+        "산출기준": ["기준", "산출", "적용"],
+        // 중도상환 관련
+        "중도상환 조건": ["중도해지", "중도상환", "해지", "해약"],
+        "중도상환": ["중도해지", "중도상환", "해지"],
+        // 예금자보호 관련
+        "예금자보호": ["예금자보호법", "보호", "5천만원", "1억원"],
+        // 가입대상/조건
+        "가입대상": ["가입대상", "대상", "만.*세", "개인", "법인"],
+        "가입조건": ["가입조건", "조건", "자격"],
+        // 기타
+        "저축한도": ["한도", "저축한도", "월.*만원", "최대.*원"],
+        "가입기간": ["기간", "개월", "년"],
+      };
+
+      // 필수 체크리스트 항목 검사 (개선된 버전)
       const requiredItems = guideline.checklist.filter(item => item.required);
-      requiredItems.forEach((item) => {
-        // 체크리스트 항목과 관련된 내용이 있는지 간단히 검사
-        const itemKeywords = item.item.split(" ").filter(w => w.length > 2);
-        const hasRelatedContent = itemKeywords.some(keyword =>
-          contentLower.includes(keyword.toLowerCase()) || 
-          Object.keys(data.sectorFields).some(field => 
-            field.toLowerCase().includes(keyword.toLowerCase()) && data.sectorFields[field]
-          )
-        );
+      requiredItems.forEach((checkItem) => {
+        // 체크리스트 항목명에 매칭되는 패턴 찾기
+        let patterns: string[] = [];
+
+        // 직접 매칭되는 패턴이 있는지 확인
+        for (const [key, value] of Object.entries(checklistPatterns)) {
+          if (checkItem.item.includes(key) || key.includes(checkItem.item.split(" ")[0])) {
+            patterns = [...patterns, ...value];
+          }
+        }
+
+        // 패턴이 없으면 항목명에서 키워드 추출
+        if (patterns.length === 0) {
+          patterns = checkItem.item.split(" ").filter(w => w.length > 1);
+        }
+
+        // 패턴 중 하나라도 매칭되면 OK
+        const hasRelatedContent = patterns.some(pattern => {
+          try {
+            const regex = new RegExp(pattern, "i");
+            return regex.test(fullContent);
+          } catch {
+            return contentLower.includes(pattern.toLowerCase());
+          }
+        });
+
         if (!hasRelatedContent) {
-          suggestions.push(`체크리스트 확인 필요: ${item.item}`);
+          suggestions.push(`체크리스트 확인 필요: ${checkItem.item}`);
         }
       });
     }
@@ -167,19 +319,93 @@ export default function DrafterPage() {
       matchedHistory = historyMatch;
     }
 
+    // 유사 상품 찾기 함수
+    const findSimilarProduct = (title: string) => {
+      if (!title) return null;
+      const titleLower = title.toLowerCase();
+
+      // 정확히 일치
+      const exactMatch = PRODUCTS.find(p =>
+        p.product_name.toLowerCase() === titleLower
+      );
+      if (exactMatch) return exactMatch;
+
+      // 부분 일치
+      const partialMatch = PRODUCTS.find(p =>
+        p.product_name.toLowerCase().includes(titleLower) ||
+        titleLower.includes(p.product_name.toLowerCase())
+      );
+      if (partialMatch) return partialMatch;
+
+      // 키워드 매칭
+      const keywords = title.split(/\s+/).filter(w => w.length > 1);
+      const keywordMatch = PRODUCTS.find(p =>
+        keywords.some(kw => p.product_name.includes(kw))
+      );
+      if (keywordMatch) return keywordMatch;
+
+      return PRODUCTS.length > 0 ? PRODUCTS[0] : null;
+    };
+
+    // 유사 상품에서 누락된 필수 항목 찾기
+    const similarProduct = findSimilarProduct(data.title);
+    const missingFields: string[] = [];
+
+    if (similarProduct) {
+      // 필수 고지사항 체크
+      const fieldChecks = [
+        { field: "예금자보호", pattern: /예금자보호법|보호됩니다/i, value: similarProduct.deposit_protection },
+        { field: "지급제한사항", pattern: /압류|가압류|질권/i, value: similarProduct.payout_restrictions },
+        { field: "자료열람권", pattern: /자료.*열람|열람.*요구/i, value: similarProduct.data_access_right },
+        { field: "유의사항", pattern: /상품설명서.*참조|고객.*센터/i, value: similarProduct.important_notes },
+      ];
+
+      fieldChecks.forEach(({ field, pattern, value }) => {
+        if (value && !pattern.test(fullContent)) {
+          missingFields.push(`${field}: ${value}`);
+        }
+      });
+
+      // 기본 정보 체크
+      if (similarProduct.target_audience && !contentLower.includes("가입대상") && !contentLower.includes("대상")) {
+        missingFields.push(`가입대상: ${similarProduct.target_audience}`);
+      }
+      if (similarProduct.term && !contentLower.includes("가입기간") && !contentLower.includes("기간")) {
+        missingFields.push(`가입기간: ${similarProduct.term}`);
+      }
+      if (similarProduct.savings_limit && !contentLower.includes("저축한도") && !contentLower.includes("한도")) {
+        missingFields.push(`저축한도: ${similarProduct.savings_limit}`);
+      }
+      if (similarProduct.interest_rates) {
+        if (similarProduct.interest_rates.base_rate && !contentLower.includes("기본금리")) {
+          missingFields.push(`기본금리: ${similarProduct.interest_rates.base_rate}`);
+        }
+        if (similarProduct.interest_rates.max_rate && !contentLower.includes("최고금리")) {
+          missingFields.push(`최고금리: ${similarProduct.interest_rates.max_rate}`);
+        }
+      }
+    }
+
     let status: AnalysisResult["status"];
     let riskLevel: AnalysisResult["riskLevel"];
     let correctedContent: string | undefined;
+
+    // 누락된 필수 항목이 있으면 suggestions에 추가하고 조건부 승인
+    if (missingFields.length > 0) {
+      suggestions.push(`※ AI 제안: 유사 상품(${similarProduct?.product_name}) 기준 누락 항목 발견`);
+    }
 
     if (violations.length > 0 && matchedHistory) {
       // 심각한 위반 + 과거 거부 이력 = 반려
       status = "반려";
       riskLevel = "High";
-    } else if (violations.length > 0 || suggestions.length > 0) {
+    } else if (violations.length > 0 || suggestions.length > 0 || missingFields.length > 0) {
       // 위반 사항 또는 개선 필요 = 조건부 승인
       status = "조건부 승인";
       riskLevel = violations.length > 0 ? "High" : "Low";
       correctedContent = data.content;
+
+      // 금지 키워드 처리
       if (regulation && violations.length > 0) {
         regulation.keywords.forEach((keyword) => {
           const regex = new RegExp(keyword, "gi");
@@ -197,7 +423,17 @@ export default function DrafterPage() {
           }
         });
       }
-      if (suggestions.length > 0 && !violations.length) {
+
+      // AI 제안: 유사 상품 기준 누락 필드 추가
+      if (missingFields.length > 0) {
+        correctedContent += "\n\n【AI 제안 - 추가 권장 항목】";
+        missingFields.forEach(field => {
+          correctedContent += `\n${field}`;
+        });
+      }
+
+      // 기타 권장사항
+      if (suggestions.length > 0 && !violations.length && missingFields.length === 0) {
         correctedContent = data.content + `\n\n※ 권장사항:\n${suggestions.slice(0, 3).join("\n")}`;
       }
     } else {
@@ -224,6 +460,22 @@ export default function DrafterPage() {
     setCurrentStep("report");
   };
 
+  // 뒤로가기 - 데이터 유지하면서 이전 단계로
+  const handleGoBack = () => {
+    switch (currentStep) {
+      case "input":
+        setCurrentStep("sector");
+        break;
+      case "analysis":
+        setCurrentStep("input");
+        // 분석 결과는 유지 (다시 분석 시 덮어씀)
+        break;
+      case "report":
+        setCurrentStep("analysis");
+        break;
+    }
+  };
+
   const handleRetry = () => {
     // URL에 retry 파라미터 추가하여 세션 유지
     const url = new URL(window.location.href);
@@ -231,7 +483,6 @@ export default function DrafterPage() {
     window.history.replaceState({}, "", url.toString());
     
     setCurrentStep("input");
-    setAnalysisResult(null);
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -418,6 +669,13 @@ export default function DrafterPage() {
 
           {currentStep === "report" && analysisResult && selectedSector && adData && (
             <div className="space-y-6">
+              <button
+                onClick={handleGoBack}
+                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                <span className="text-sm">분석 결과로 돌아가기</span>
+              </button>
               <ComplianceReport
                 result={analysisResult}
                 sector={selectedSector}

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { AlertTriangle, CheckCircle, Edit3, XCircle, FileText, History, Sparkles } from "lucide-react";
 import { AnalysisResult as AnalysisResultType } from "@/data/mockData";
+import { useMemo } from "react";
 
 interface AnalysisResultProps {
   result: AnalysisResultType;
@@ -154,6 +155,13 @@ function DiffComparison({ original, corrected }: { original: string; corrected: 
 }
 
 export default function AnalysisResult({ result, originalContent, onProceed, onRetry, aiScore }: AnalysisResultProps) {
+  // 차이점 하이라이트 계산
+  const diffHighlight = useMemo(() => {
+    if (result.correctedContent) {
+      return getDiffHighlight(originalContent, result.correctedContent);
+    }
+    return null;
+  }, [originalContent, result.correctedContent]);
   const getStatusConfig = () => {
     switch (result.status) {
       case "반려":
@@ -295,8 +303,40 @@ export default function AnalysisResult({ result, originalContent, onProceed, onR
           </div>
         )}
 
-        {result.status === "조건부 승인" && result.correctedContent && (
-          <DiffComparison original={originalContent} corrected={result.correctedContent} />
+        {result.status === "조건부 승인" && result.correctedContent && diffHighlight && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">제안된 수정 내용</h4>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-red-50 p-3 rounded border border-red-200">
+                <p className="text-xs font-medium text-red-600 mb-2 flex items-center gap-1">
+                  <span className="inline-block w-3 h-3 bg-red-200 rounded"></span>
+                  원본 (삭제/변경 부분)
+                </p>
+                <div className="text-sm text-gray-700">{diffHighlight.originalHighlighted}</div>
+              </div>
+              <div className="bg-green-50 p-3 rounded border border-green-200">
+                <p className="text-xs font-medium text-green-600 mb-2 flex items-center gap-1">
+                  <span className="inline-block w-3 h-3 bg-green-200 rounded"></span>
+                  수정 제안 (추가/변경 부분)
+                </p>
+                <div className="text-sm text-gray-700">{diffHighlight.correctedHighlighted}</div>
+              </div>
+            </div>
+            <div className="mt-2 flex gap-4 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-red-200 rounded"></span>
+                삭제됨
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-green-200 rounded"></span>
+                추가됨
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-yellow-300 rounded"></span>
+                수정 필요
+              </span>
+            </div>
+          </div>
         )}
       </div>
 

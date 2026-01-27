@@ -48,11 +48,6 @@ export async function POST(request: NextRequest) {
       <p><strong>광고 제목:</strong> ${adTitle || "N/A"}</p>
       <p><strong>그룹사:</strong> ${sector || "N/A"}</p>
 
-      <div style="margin: 20px 0;">
-        <p style="margin-bottom: 5px; color: #6b7280;">컴플라이언스 점수</p>
-        <span class="score">${score || 0}</span><span style="color: #6b7280;">/100</span>
-      </div>
-
       <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
         <h3 style="margin-top: 0;">상세 피드백</h3>
         <p>${feedback || "피드백 없음"}</p>

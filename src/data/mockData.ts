@@ -297,7 +297,7 @@ export const BANK_GUIDELINE: SectorGuideline = {
     },
     {
       id: "bank-p3",
-      pattern: "무조건|반드시|확실",
+      pattern: "무조건|확실",
       description: "거래조건이 달리 적용될 수 있음에도 확정적으로 표시",
       regulation: "은행 광고심의 기준 제17조 제4호",
       suggestion: "'조건에 따라 달라질 수 있습니다' 문구 추가",
