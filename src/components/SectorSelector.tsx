@@ -10,25 +10,25 @@ interface SectorSelectorProps {
 
 const sectors: { value: Sector; label: string; icon: React.ReactNode; description: string }[] = [
   {
-    value: "Bank",
+    value: "은행",
     label: "은행",
     icon: <Building2 className="w-6 h-6" />,
     description: "예적금, 대출 상품 광고",
   },
   {
-    value: "Card",
+    value: "카드",
     label: "카드",
     icon: <CreditCard className="w-6 h-6" />,
     description: "신용카드, 체크카드 광고",
   },
   {
-    value: "Investment",
+    value: "투자",
     label: "투자",
     icon: <TrendingUp className="w-6 h-6" />,
     description: "펀드, 주식, 채권 광고",
   },
   {
-    value: "Insurance",
+    value: "보험",
     label: "보험",
     icon: <Shield className="w-6 h-6" />,
     description: "생명보험, 손해보험 광고",

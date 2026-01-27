@@ -1,4 +1,4 @@
-export type Sector = "Bank" | "Card" | "Investment" | "Insurance";
+export type Sector = "은행" | "카드" | "투자" | "보험";
 
 // 페르소나 타입 정의
 export type PersonaType = "drafter" | "compliance_officer" | "consumer_protection";
@@ -77,28 +77,28 @@ export interface AnalysisResult {
 
 export const REGULATIONS: Regulation[] = [
   {
-    sector: "Bank",
+    sector: "은행",
     keywords: ["무조건", "확정금리", "확정 수익", "원금 보장"],
     required: ["예금자보호법 문구"],
     riskLevel: "High",
     suggestion: "금리는 가입 조건에 따라 달라질 수 있습니다.",
   },
   {
-    sector: "Card",
+    sector: "카드",
     keywords: ["무이자", "평생 무료", "최대 할인"],
     required: ["연회비 안내", "이용 조건"],
     riskLevel: "Low",
     suggestion: "할인 및 혜택은 이용 조건에 따라 달라질 수 있습니다.",
   },
   {
-    sector: "Investment",
+    sector: "투자",
     keywords: ["원금보장", "손실 없음", "확정 수익", "무조건", "100% 수익"],
     required: ["투자자 유의사항", "원금손실 가능성"],
     riskLevel: "High",
     suggestion: "투자 원금의 손실이 발생할 수 있습니다.",
   },
   {
-    sector: "Insurance",
+    sector: "보험",
     keywords: ["무조건 보장", "전액 보장", "무심사"],
     required: ["보험약관 확인 문구", "보장 제한 사항"],
     riskLevel: "Low",
@@ -140,19 +140,19 @@ export const HISTORY_RAG: HistoryItem[] = [
 ];
 
 export const SECTOR_FIELDS: Record<Sector, { label: string; type: string; required: boolean }[]> = {
-  Bank: [
+  은행: [
     { label: "예금자보호법 문구 포함", type: "checkbox", required: true },
     { label: "금리 정보 명시", type: "checkbox", required: true },
   ],
-  Card: [
+  카드: [
     { label: "연회비 정보 포함", type: "checkbox", required: true },
     { label: "혜택 조건 명시", type: "checkbox", required: false },
   ],
-  Investment: [
+  투자: [
     { label: "투자 위험 고지 포함", type: "checkbox", required: true },
     { label: "원금손실 가능성 명시", type: "checkbox", required: true },
   ],
-  Insurance: [
+  보험: [
     { label: "보험약관 확인 문구 포함", type: "checkbox", required: true },
     { label: "보장 제한 사항 명시", type: "checkbox", required: false },
   ],
@@ -199,7 +199,7 @@ export interface SectorGuideline {
 
 // 은행 업종 가이드라인 (은행 광고심의 기준 기반)
 export const BANK_GUIDELINE: SectorGuideline = {
-  sector: "Bank",
+  sector: "은행",
   name: "은행",
   mainRegulations: [
     "금융소비자보호에 관한 법률 제22조",
@@ -339,7 +339,7 @@ export const BANK_GUIDELINE: SectorGuideline = {
 
 // 카드 업종 가이드라인 (여신전문금융업법 기반)
 export const CARD_GUIDELINE: SectorGuideline = {
-  sector: "Card",
+  sector: "카드",
   name: "카드",
   mainRegulations: [
     "여신전문금융업법",
@@ -451,7 +451,7 @@ export const CARD_GUIDELINE: SectorGuideline = {
 
 // 투자 업종 가이드라인 (자본시장법, 금융투자업규정 기반)
 export const INVESTMENT_GUIDELINE: SectorGuideline = {
-  sector: "Investment",
+  sector: "투자",
   name: "투자",
   mainRegulations: [
     "자본시장과 금융투자업에 관한 법률 제57조",
@@ -602,7 +602,7 @@ export const INVESTMENT_GUIDELINE: SectorGuideline = {
 
 // 보험 업종 가이드라인 (보험업법 기반)
 export const INSURANCE_GUIDELINE: SectorGuideline = {
-  sector: "Insurance",
+  sector: "보험",
   name: "보험",
   mainRegulations: [
     "보험업법",
@@ -730,8 +730,8 @@ export const INSURANCE_GUIDELINE: SectorGuideline = {
 
 // 업종별 가이드라인 매핑
 export const SECTOR_GUIDELINES: Record<Sector, SectorGuideline> = {
-  Bank: BANK_GUIDELINE,
-  Card: CARD_GUIDELINE,
-  Investment: INVESTMENT_GUIDELINE,
-  Insurance: INSURANCE_GUIDELINE,
+  은행: BANK_GUIDELINE,
+  카드: CARD_GUIDELINE,
+  투자: INVESTMENT_GUIDELINE,
+  보험: INSURANCE_GUIDELINE,
 };
