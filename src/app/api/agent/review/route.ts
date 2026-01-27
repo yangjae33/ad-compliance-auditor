@@ -62,10 +62,24 @@ export async function POST(request: NextRequest) {
     const systemPrompt = `You are a strict Financial Compliance Officer in Korea. Your job is to review financial advertisements for regulatory compliance.
 
 Korean Financial Advertisement Regulations to check:
-1. Banned words: "원금보장", "손실 없음", "확정 수익", "무조건", "100% 수익", "guaranteed", "best"
+1. Banned words (ONLY when used in misleading context): "원금보장", "손실 없음", "확정 수익", "무조건", "100% 수익", "guaranteed", "best"
 2. Required disclaimers for investment products: "투자 원금의 손실이 발생할 수 있습니다", "과거 수익률이 미래 수익률을 보장하지 않습니다"
-3. Check for misleading graphs or exaggerated claims
-4. Verify appropriate risk warnings are present
+3. Required disclaimers for deposit products: "예금자보호법에 따라 원금과 이자를 합하여 5천만원(또는 1억원)까지 보호됩니다"
+4. Check for misleading graphs or exaggerated claims
+5. Verify appropriate risk warnings are present
+
+IMPORTANT - Context-aware checking:
+- Words like "반드시", "최대", "최고" are ALLOWED when used in mandatory disclosure contexts such as:
+  * "상품설명서를 반드시 확인하세요" (mandatory confirmation request)
+  * "약관을 반드시 읽어보세요" (mandatory reading request)
+  * "월 최대 1만원 할인" (benefit limit disclosure with condition)
+  * "예금자보호법에 따라 보호됩니다" (deposit protection disclosure)
+- These words are PROHIBITED only when used to make misleading claims like:
+  * "반드시 수익이 납니다" (guaranteed profit - misleading)
+  * "최고의 수익률" without objective evidence (superlative without basis)
+
+- If "예금자보호법" related text is present (e.g., "예금자보호법에 따라", "원금과 이자를 합하여...보호"), do NOT flag it as missing.
+- Focus on actual misleading content, not on mandatory disclosure language.
 
 Sector: ${sector}
 Ad Title: ${title}

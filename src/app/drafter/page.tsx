@@ -57,16 +57,74 @@ export default function DrafterPage() {
     const fullContent = (data.title + " " + data.content);
     const contentLower = fullContent.toLowerCase();
 
+    // 허용되는 필수 문구 패턴 (이 패턴이 포함된 문장은 금지 표현 검사에서 제외)
+    const allowedMandatoryPatterns = [
+      "상품설명서.*반드시",
+      "약관.*반드시",
+      "투자설명서.*반드시",
+      "반드시.*확인",
+      "반드시.*읽어보",
+      "반드시.*참조",
+      "예금자보호법에 따라",
+      "원금과.*이자.*합하여.*보호",
+      "5천만원.*보호|1억원.*보호",
+      "월.*최대.*원",  // 혜택 한도 표시
+      "최대.*적립|최대.*할인|최대.*혜택",  // 혜택 조건 표시 (조건 명시된 경우)
+    ];
+
+    // 문맥이 허용 패턴에 해당하는지 확인하는 함수
+    const isInAllowedContext = (matchedText: string, content: string): boolean => {
+      // 매칭된 텍스트 주변 문맥 추출 (앞뒤 50자)
+      const matchIndex = content.toLowerCase().indexOf(matchedText.toLowerCase());
+      if (matchIndex === -1) return false;
+
+      const start = Math.max(0, matchIndex - 50);
+      const end = Math.min(content.length, matchIndex + matchedText.length + 50);
+      const context = content.substring(start, end).toLowerCase();
+
+      return allowedMandatoryPatterns.some(pattern => {
+        try {
+          const regex = new RegExp(pattern, "i");
+          return regex.test(context);
+        } catch {
+          return context.includes(pattern.replace(/\.\*/g, ""));
+        }
+      });
+    };
+
     // 기존 규정 기반 검사
     if (regulation) {
       regulation.keywords.forEach((keyword) => {
         if (contentLower.includes(keyword.toLowerCase())) {
-          violations.push(`금지 키워드 발견: "${keyword}"`);
+          // 허용된 문맥인지 확인
+          if (!isInAllowedContext(keyword, fullContent)) {
+            violations.push(`금지 키워드 발견: "${keyword}"`);
+          }
         }
       });
 
+      // 예금자보호법 문구 검사 개선
       regulation.required.forEach((req) => {
-        if (!data.sectorFields[req] && !contentLower.includes(req.toLowerCase())) {
+        if (req === "예금자보호법 문구") {
+          // 실제 예금자보호법 관련 문구가 있는지 확인
+          const depositProtectionPatterns = [
+            "예금자보호법에 따라",
+            "예금자보호법.*보호",
+            "원금과.*이자.*보호",
+            "5천만원.*보호",
+            "1억원.*보호",
+          ];
+          const hasDepositProtection = depositProtectionPatterns.some(pattern => {
+            try {
+              return new RegExp(pattern, "i").test(fullContent);
+            } catch {
+              return contentLower.includes(pattern.replace(/\.\*/g, ""));
+            }
+          });
+          if (!hasDepositProtection && !data.sectorFields[req]) {
+            suggestions.push(`필수 포함 사항 누락: "${req}"`);
+          }
+        } else if (!data.sectorFields[req] && !contentLower.includes(req.toLowerCase())) {
           suggestions.push(`필수 포함 사항 누락: "${req}"`);
         }
       });
@@ -83,28 +141,42 @@ export default function DrafterPage() {
           const regex = new RegExp(expr.pattern, "gi");
           const match = fullContent.match(regex);
           if (match) {
-            violations.push(`금지 표현 발견: "${match[0]}" - ${expr.description}`);
-            suggestions.push(`💡 권장: ${expr.suggestion}`);
+            // 허용된 문맥인지 확인 후 위반 처리
+            if (!isInAllowedContext(match[0], fullContent)) {
+              violations.push(`금지 표현 발견: "${match[0]}" - ${expr.description}`);
+              suggestions.push(`💡 권장: ${expr.suggestion}`);
+            }
           }
         } catch {
           // 정규식 오류 시 단순 문자열 검색
           const simplePattern = expr.pattern.replace(/\\/g, "").replace(/\./g, "").replace(/\{.*?\}/g, "").replace(/\|/g, " ");
           if (contentLower.includes(simplePattern.toLowerCase())) {
-            violations.push(`금지 표현 발견: "${simplePattern}" - ${expr.description}`);
-            suggestions.push(`💡 권장: ${expr.suggestion}`);
+            if (!isInAllowedContext(simplePattern, fullContent)) {
+              violations.push(`금지 표현 발견: "${simplePattern}" - ${expr.description}`);
+              suggestions.push(`💡 권장: ${expr.suggestion}`);
+            }
           }
         }
       });
 
-      // 필수 문구 누락 검사
+      // 필수 문구 누락 검사 (개선된 버전)
       guideline.mandatoryStatements.forEach((stmt) => {
-        // 조건부 필수 문구는 제외 (실제 구현에서는 조건 체크 로직 필요)
+        // 조건부 필수 문구는 제외
         if (!stmt.condition) {
-          const stmtKeywords = stmt.content.split(" ").filter(w => w.length > 3);
-          const hasStatement = stmtKeywords.some(keyword => 
+          // 핵심 키워드 기반 검사 (더 정확한 매칭)
+          const coreKeywords = stmt.content
+            .replace(/[.,]/g, "")
+            .split(" ")
+            .filter(w => w.length > 2 && !["및", "을", "를", "에", "의", "가", "이", "은", "는"].includes(w));
+
+          // 핵심 키워드 중 60% 이상이 포함되어야 함
+          const matchCount = coreKeywords.filter(keyword =>
             contentLower.includes(keyword.toLowerCase())
-          );
-          if (!hasStatement) {
+          ).length;
+
+          const matchRatio = coreKeywords.length > 0 ? matchCount / coreKeywords.length : 0;
+
+          if (matchRatio < 0.6) {
             suggestions.push(`필수 문구 권장: "${stmt.content.substring(0, 50)}..."`);
           }
         }
