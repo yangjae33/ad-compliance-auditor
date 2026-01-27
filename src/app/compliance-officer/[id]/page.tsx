@@ -561,7 +561,7 @@ export default function DraftDetailPage() {
                           value={reviewComment}
                           onChange={(e) => setReviewComment(e.target.value)}
                           placeholder="반려/수정요청 시 필수 입력"
-                          className="w-full text-sm border border-gray-200 rounded-lg p-2 h-20 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full text-sm text-gray-900 border border-gray-200 rounded-lg p-2 h-20 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
                       <button

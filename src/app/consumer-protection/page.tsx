@@ -301,7 +301,7 @@ export default function ConsumerProtectionPage() {
                   {/* Content Preview */}
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-1">광고 내용</h4>
-                    <p className="text-sm bg-gray-50 p-3 rounded whitespace-pre-wrap max-h-24 overflow-y-auto">
+                    <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded whitespace-pre-wrap max-h-24 overflow-y-auto">
                       {selectedDraft.correctedContent || selectedDraft.content}
                     </p>
                   </div>
@@ -364,7 +364,7 @@ export default function ConsumerProtectionPage() {
                       value={consumerFeedback}
                       onChange={(e) => setConsumerFeedback(e.target.value)}
                       placeholder="소비자 보호 관점에서의 의견을 작성해주세요..."
-                      className="w-full text-sm border rounded-lg p-2 h-24 resize-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      className="w-full text-sm text-gray-900 border rounded-lg p-2 h-24 resize-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     />
                   </div>
                 </div>
