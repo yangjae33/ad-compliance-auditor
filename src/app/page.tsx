@@ -1,101 +1,248 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { Shield, ArrowRight } from "lucide-react";
+import SectorSelector from "@/components/SectorSelector";
+import AdInputForm, { AdFormData } from "@/components/AdInputForm";
+import AnalysisResultComponent from "@/components/AnalysisResult";
+import ComplianceReport from "@/components/ComplianceReport";
+import {
+  Sector,
+  AnalysisResult,
+  REGULATIONS,
+  HISTORY_RAG,
+} from "@/data/mockData";
+
+type Step = "sector" | "input" | "analysis" | "report";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [currentStep, setCurrentStep] = useState<Step>("sector");
+  const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [adData, setAdData] = useState<AdFormData | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleSectorSelect = (sector: Sector) => {
+    setSelectedSector(sector);
+  };
+
+  const handleProceedToInput = () => {
+    if (selectedSector) {
+      setCurrentStep("input");
+    }
+  };
+
+  const analyzeAd = async (data: AdFormData) => {
+    setAdData(data);
+    setIsAnalyzing(true);
+
+    // Simulate AI processing delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const regulation = REGULATIONS.find((r) => r.sector === selectedSector);
+    const violations: string[] = [];
+    const suggestions: string[] = [];
+    let matchedHistory = null;
+
+    // Check 1: Keyword detection
+    if (regulation) {
+      const contentLower = (data.title + " " + data.content).toLowerCase();
+      regulation.keywords.forEach((keyword) => {
+        if (contentLower.includes(keyword.toLowerCase())) {
+          violations.push(`금지 키워드 발견: "${keyword}"`);
+        }
+      });
+
+      // Check required fields
+      regulation.required.forEach((req) => {
+        if (!data.sectorFields[req] && !contentLower.includes(req.toLowerCase())) {
+          suggestions.push(`필수 포함 사항 누락: "${req}"`);
+        }
+      });
+
+      if (violations.length > 0) {
+        suggestions.push(regulation.suggestion);
+      }
+    }
+
+    // Check 2: History RAG matching
+    const historyMatch = HISTORY_RAG.find((history) => {
+      const historyWords = history.content.toLowerCase().split(" ");
+      const contentWords = (data.title + " " + data.content).toLowerCase();
+      return historyWords.some((word) => word.length > 2 && contentWords.includes(word));
+    });
+
+    if (historyMatch && historyMatch.result === "Rejected") {
+      matchedHistory = historyMatch;
+    }
+
+    // Determine status
+    let status: AnalysisResult["status"];
+    let riskLevel: AnalysisResult["riskLevel"];
+    let correctedContent: string | undefined;
+
+    if (violations.length > 0 && matchedHistory) {
+      status = "Rejected";
+      riskLevel = "High";
+    } else if (violations.length > 0) {
+      status = "AutoCorrected";
+      riskLevel = "Low";
+      // Generate auto-corrected content
+      correctedContent = data.content;
+      if (regulation) {
+        regulation.keywords.forEach((keyword) => {
+          const regex = new RegExp(keyword, "gi");
+          correctedContent = correctedContent?.replace(regex, "[수정 필요]");
+        });
+        correctedContent += `\n\n※ ${regulation.suggestion}`;
+      }
+    } else if (suggestions.length > 0) {
+      status = "AutoCorrected";
+      riskLevel = "Low";
+      correctedContent = data.content + `\n\n※ ${suggestions.join(", ")}`;
+    } else {
+      status = "Approved";
+      riskLevel = "Low";
+    }
+
+    const result: AnalysisResult = {
+      status,
+      riskLevel,
+      violations,
+      matchedHistory,
+      suggestions,
+      correctedContent,
+    };
+
+    setAnalysisResult(result);
+    setIsAnalyzing(false);
+    setCurrentStep("analysis");
+  };
+
+  const handleProceedToReport = () => {
+    setCurrentStep("report");
+  };
+
+  const handleRetry = () => {
+    setCurrentStep("input");
+    setAnalysisResult(null);
+  };
+
+  const handleReset = () => {
+    setCurrentStep("sector");
+    setSelectedSector(null);
+    setAnalysisResult(null);
+    setAdData(null);
+  };
+
+  const steps = [
+    { key: "sector", label: "업종 선택" },
+    { key: "input", label: "광고 입력" },
+    { key: "analysis", label: "분석 결과" },
+    { key: "report", label: "리포트" },
+  ];
+
+  const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-600 p-2 rounded-lg">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Smart Compliance Auditor</h1>
+              <p className="text-sm text-gray-500">AI 기반 금융 광고 컴플라이언스 검사 시스템</p>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </header>
+
+      {/* Progress Steps */}
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-8">
+          {steps.map((step, index) => (
+            <div key={step.key} className="flex items-center">
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                  index <= currentStepIndex
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-500"
+                }`}
+              >
+                {index + 1}
+              </div>
+              <span
+                className={`ml-2 text-sm hidden sm:inline ${
+                  index <= currentStepIndex ? "text-blue-600 font-medium" : "text-gray-500"
+                }`}
+              >
+                {step.label}
+              </span>
+              {index < steps.length - 1 && (
+                <ArrowRight className="w-4 h-4 mx-4 text-gray-300" />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+          {currentStep === "sector" && (
+            <div className="space-y-6">
+              <SectorSelector
+                selectedSector={selectedSector}
+                onSelectSector={handleSectorSelect}
+              />
+              {selectedSector && (
+                <button
+                  onClick={handleProceedToInput}
+                  className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                >
+                  다음 단계로
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {currentStep === "input" && selectedSector && (
+            <AdInputForm
+              sector={selectedSector}
+              onAnalyze={analyzeAd}
+              isAnalyzing={isAnalyzing}
+            />
+          )}
+
+          {currentStep === "analysis" && analysisResult && adData && (
+            <AnalysisResultComponent
+              result={analysisResult}
+              originalContent={adData.content}
+              onProceed={handleProceedToReport}
+              onRetry={handleRetry}
+            />
+          )}
+
+          {currentStep === "report" && analysisResult && selectedSector && adData && (
+            <ComplianceReport
+              result={analysisResult}
+              sector={selectedSector}
+              adTitle={adData.title}
+              adContent={adData.content}
+              onReset={handleReset}
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer className="text-center text-sm text-gray-500 mt-8">
+          <p>Smart Compliance Auditor v1.0 - AI Agent Prototype</p>
+          <p className="mt-1">Mock data 및 시뮬레이션 기반 데모 버전</p>
+        </footer>
+      </div>
+    </main>
   );
 }
