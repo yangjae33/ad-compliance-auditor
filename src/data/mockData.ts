@@ -735,3 +735,385 @@ export const SECTOR_GUIDELINES: Record<Sector, SectorGuideline> = {
   투자: INVESTMENT_GUIDELINE,
   보험: INSURANCE_GUIDELINE,
 };
+export const PRODUCTS = [
+    {
+      "id": "SH-001",
+      "product_name": "청년 처음적금",
+      "target_audience": "가입일 현재 만 18세 이상 ~ 만 19세 이하 실명의 개인 (1인 1계좌)",
+      "term": "12개월",
+      "savings_limit": "월 30만원",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.80%",
+        "max_rate": "연 5.80%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다. 예금잔액증명서 발급 당일에는 입금,출급,이체 등 잔액 변동이 불가합니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "미성년자의 경우 중도해지는 법정대리인을 통해서만 가능하므로, 영업점에서 해지 가능합니다. 기타 자세한 사항은 반드시 상품설명서를 참조하시거나 영업점, 고객상담센터(1577-8000)로 문의하여주시기 바랍니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '1억원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-002",
+      "product_name": "SOL 모임적금",
+      "target_audience": "모임장을 포함한 모임원이 2인 이상 100인 이하로 구성된 모임의 모임장으로 만 17세 이상 실명의 개인 및 개인사업자 (1인 최대 5계좌)",
+      "term": "3개월 이상 12개월 이내 (월 단위 가입 가능)",
+      "savings_limit": "1만원 이상 월 100만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.60%",
+        "max_rate": "연 4.10%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다. 예금잔액증명서 발급 당일에는 입금,출급,이체 등 잔액 변동이 불가합니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "미성년자의 경우 중도해지는 법정대리인을 통해서만 가능하므로, 영업점에서 해지 가능합니다. 기타 자세한 사항은 반드시 상품설명서를 참조하시거나 영업점, 고객상담센터(1577-8000)로 문의하여주시기 바랍니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '1억원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-003",
+      "product_name": "신한 알.쏠 적금",
+      "target_audience": "실명의 개인",
+      "term": "12개월 이상 36개월 이내",
+      "savings_limit": "1천원 이상 월 300만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.45%",
+        "max_rate": "연 3.75%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다. 예금잔액증명서 발급 당일에는 입금,출급,이체 등 잔액 변동이 불가합니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "미성년자의 경우 중도해지는 법정대리인을 통해서만 가능하므로, 영업점에서 해지 가능합니다. 기타 자세한 사항은 반드시 상품설명서를 참조하시거나 영업점, 고객상담센터(1577-8000)로 문의하여주시기 바랍니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '1억원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-004",
+      "product_name": "신한 안녕, 반가워 적금",
+      "target_audience": "적금 가입일 직전 1년간 신한은행 적금(청약 제외) 보유 이력이 없는 실명의 개인",
+      "term": "12개월",
+      "savings_limit": "월 50만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.50%",
+        "max_rate": "연 5.50%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다. 예금잔액증명서 발급 당일에는 입금,출급,이체 등 잔액 변동이 불가합니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "중도해지 시 약정된 이율보다 낮은 중도해지이율이 적용됩니다. 우대이자율은 만기 해지 시에만 적용됩니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-005",
+      "product_name": "신한 쏠편한 정기예금",
+      "target_audience": "실명의 개인 및 개인사업자",
+      "term": "1개월 이상 60개월 이내 (일 단위 가입 가능)",
+      "savings_limit": "최소 1만원 이상 (제한 없음)",
+      "interest_payment_method": "만기일시지급식 또는 월이자지급식",
+      "partial_withdrawal_allowed": "2회 가능 (잔액 1만원 이상 유지 시)",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": true,
+      "interest_rates": {
+        "base_rate": "연 3.00%",
+        "max_rate": "연 3.05%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "모바일 전용 상품으로 영업점 창구에서는 해지만 가능합니다. 만기 자동재예치 설정이 가능합니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-006",
+      "product_name": "신한 청년저축왕 적금",
+      "target_audience": "만 18세 이상 만 39세 이하 실명의 개인",
+      "term": "12개월, 24개월, 36개월",
+      "savings_limit": "월 1천원 이상 30만원 이하",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 3.35%",
+        "max_rate": "연 5.65%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "가입대상 연령 확인을 위해 신분증 등 증빙서류 제출이 필요할 수 있습니다. 특별우대금리는 조건 충족 시 만기 해지 계좌에 한해 제공됩니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-007",
+      "product_name": "신한 40주 맘(Mom) 적금",
+      "target_audience": "임신 중인 여성 고객 (1인 1계좌)",
+      "term": "40주 (약 10개월)",
+      "savings_limit": "최대 월 100만원",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.50%",
+        "max_rate": "연 4.50%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "가입 시 또는 만기 해지 시 임신확인서, 산모수첩 등 증빙서류 제출이 필요합니다. 출산 축하금 등 부가 혜택이 있을 수 있습니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-008",
+      "product_name": "신한 주거래 우대적금",
+      "target_audience": "실명의 개인 및 개인사업자",
+      "term": "12개월, 24개월, 36개월",
+      "savings_limit": "1천원 이상 월 100만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": true,
+      "interest_rates": {
+        "base_rate": "연 2.25%",
+        "max_rate": "연 3.85%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "급여이체 또는 연금수령 실적에 따라 우대이자율이 적용됩니다. 자동재예치 신청 시 원금과 이자가 재예치될 수 있습니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-009",
+      "product_name": "신한 가맹점 스윙(Swing) 적금",
+      "target_audience": "신한은행 결제계좌를 보유한 개인사업자",
+      "term": "6개월, 12개월",
+      "savings_limit": "월 300만원 이내 (일 10만원 이내 스윙)",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.40%",
+        "max_rate": "연 3.40%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "카드매출 입금액 중 일정 금액을 적금으로 자동 이체하는 상품입니다. 사업자등록증 확인이 필요합니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-010",
+      "product_name": "신한 마이홈 적금",
+      "target_audience": "주택청약종합저축을 보유하지 않은 실명의 개인 (1인 1계좌)",
+      "term": "12개월",
+      "savings_limit": "월 20만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.60%",
+        "max_rate": "연 4.60%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "주택청약종합저축을 신규 가입하고 당행 계좌로 자동이체 등록 시 우대금리가 제공됩니다. 중도해지 시 우대금리는 적용되지 않습니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-011",
+      "product_name": "신한 S드림 정기예금",
+      "target_audience": "실명의 개인, 법인",
+      "term": "1개월 이상 60개월 이내",
+      "savings_limit": "300만원 이상",
+      "interest_payment_method": "만기일시지급식 또는 월이자지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": true,
+      "interest_rates": {
+        "base_rate": "연 2.60%",
+        "max_rate": "연 2.80%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "영업점 가입 전용 상품입니다. 만기 시 자동해지 서비스 신청이 가능합니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-012",
+      "product_name": "신한 군인행복 적금",
+      "target_audience": "복무 중인 군인 및 입영 예정자",
+      "term": "12개월 이상 24개월 이내",
+      "savings_limit": "월 50만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 3.00%",
+        "max_rate": "연 4.50%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "가입 시 복무확인서, 입영통지서 등 증빙서류 제출이 필수입니다. 1인 1계좌만 가입 가능합니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-013",
+      "product_name": "2024 신한 프로야구 적금",
+      "target_audience": "실명의 개인 (1인 1계좌)",
+      "term": "12개월",
+      "savings_limit": "1천원 이상 월 50만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 3.00%",
+        "max_rate": "연 4.20%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "응원하는 구단의 성적에 따라 우대금리가 차등 적용됩니다. 프로야구 시즌 한정 판매 상품입니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-014",
+      "product_name": "신한 쏠편한 선물하는 적금",
+      "target_audience": "실명의 개인",
+      "term": "6개월",
+      "savings_limit": "월 30만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 3.20%",
+        "max_rate": "연 4.00%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "타인에게 선물할 수 있는 적금 상품입니다. 선물 받는 사람이 수락해야 계좌 개설이 완료됩니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-015",
+      "product_name": "신한 두배드림(Dream) 적금",
+      "target_audience": "실명의 개인 (1인 1계좌)",
+      "term": "24개월",
+      "savings_limit": "월 100만원",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.80%",
+        "max_rate": "연 5.60%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "본인 납입 원금이 500만원 또는 1,000만원 달성 시 우대금리가 적용되어 이자가 두 배가 되는 구조입니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-016",
+      "product_name": "신한 스마트 적금",
+      "target_audience": "실명의 개인 (1인 1계좌)",
+      "term": "12개월",
+      "savings_limit": "월 100만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": true,
+      "interest_rates": {
+        "base_rate": "연 3.00%",
+        "max_rate": "연 3.50%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "스마트폰 뱅킹 전용 상품으로 조건 없이 간편하게 가입 가능한 상품입니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-017",
+      "product_name": "신한 ISA 정기예금",
+      "target_audience": "신한은행 ISA(개인종합자산관리계좌) 보유 고객",
+      "term": "3개월, 6개월, 12개월",
+      "savings_limit": "ISA 계좌 납입 한도 내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가 (ISA 계좌 해지 시 가능)",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 3.10%",
+        "max_rate": "연 3.10%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "ISA 계좌 내에서 운용되는 예금으로 비과세 혜택을 받을 수 있는 상품입니다. 일반 정기예금과 달리 단독 가입이 불가합니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-018",
+      "product_name": "신한 새희망 적금",
+      "target_audience": "기초생활수급자, 차상위계층, 장애인 등 사회소외계층",
+      "term": "36개월",
+      "savings_limit": "월 20만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "불가",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 4.50%",
+        "max_rate": "연 6.00%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "가입 대상 증빙서류(수급자 증명서 등) 원본 제출이 필요하며, 영업점 창구에서만 가입 가능합니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-019",
+      "product_name": "신한 119생명지킴이 적금",
+      "target_audience": "전국 소방공무원 및 의용소방대원",
+      "term": "12개월 이상 36개월 이내",
+      "savings_limit": "월 30만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 3.00%",
+        "max_rate": "연 4.00%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "소방공무원증 또는 재직증명서 확인이 필요합니다. 공익적 목적으로 우대금리를 제공하는 상품입니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    },
+    {
+      "id": "SH-020",
+      "product_name": "신한 쏠만해 적금",
+      "target_audience": "신한 쏠(SOL) 가입 및 신한카드 사용 고객",
+      "term": "12개월",
+      "savings_limit": "월 30만원 이내",
+      "interest_payment_method": "만기일시지급식",
+      "partial_withdrawal_allowed": "2회 가능",
+      "joint_name_allowed": false,
+      "reinvestment_allowed": false,
+      "interest_rates": {
+        "base_rate": "연 2.50%",
+        "max_rate": "연 5.00%"
+      },
+      "payout_restrictions": "계좌에 압류, 가압류, 질권설정 등이 등록될 경우 원금 및 이자 지급이 제한됩니다.",
+      "data_access_right": "금융소비자는 분쟁조정 또는 소송의 수행 등 권리 구제를 위한 목적으로 은행이 기록 및 유지·관리하는 계약에 관련한 자료에 대해 열람을 요구할 수 있습니다.",
+      "important_notes": "모바일 전용 상품으로 모바일 뱅킹 신규 가입 등의 조건 달성 시 우대금리가 적용됩니다.",
+      "deposit_protection": "이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 '5천만원까지' (본 은행의 여타 보호상품과 합산) 보호됩니다."
+    }
+  ];

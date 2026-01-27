@@ -1,8 +1,17 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileText, Image as ImageIcon, Sparkles, X } from "lucide-react";
-import { Sector, SECTOR_FIELDS } from "@/data/mockData";
+import { Upload, FileText, Image as ImageIcon, Sparkles, X, Search } from "lucide-react";
+import { Sector, SECTOR_FIELDS, PRODUCTS } from "@/data/mockData";
+
+interface Product {
+  id: string;
+  product_name: string;
+  payout_restrictions: string;
+  data_access_right: string;
+  important_notes: string;
+  deposit_protection: string;
+}
 
 interface AdInputFormProps {
   sector: Sector;
@@ -26,7 +35,39 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
   const [isAutoFilling, setIsAutoFilling] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Product search states
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+
   const fields = SECTOR_FIELDS[sector];
+
+  // Filter products by search query
+  const filteredProducts = PRODUCTS.filter((product) => {
+    const query = productSearchQuery.toLowerCase();
+    return (
+      product.product_name.toLowerCase().includes(query) ||
+      product.id.toLowerCase().includes(query)
+    );
+  });
+
+  // Handle product selection from modal
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+    setShowProductModal(false);
+    setProductSearchQuery("");
+
+    // Auto-fill mandatory disclosure text
+    const mandatoryText = `${product.payout_restrictions}
+
+${product.data_access_right}
+
+${product.important_notes}
+
+${product.deposit_protection}`;
+
+    setContent((prev) => (prev ? `${prev}\n\n${mandatoryText}` : mandatoryText));
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,26 +142,66 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h3 className="font-medium text-yellow-800 mb-2">
-            {sector} 업종 필수 체크사항
+        {/* Product Info Section */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-medium text-blue-800 mb-3">
+            상품 정보
           </h3>
-          <div className="space-y-2">
-            {fields.map((field) => (
-              <label key={field.label} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={sectorFields[field.label] || false}
-                  onChange={(e) => handleFieldChange(field.label, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                상품명
               </label>
-            ))}
+              <input
+                type="text"
+                value={selectedProduct?.product_name || ""}
+                readOnly
+                placeholder="검색 버튼을 클릭하여 선택"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+              />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  상품 코드
+                </label>
+                <input
+                  type="text"
+                  value={selectedProduct?.id || ""}
+                  readOnly
+                  placeholder="-"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={() => setShowProductModal(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <Search className="w-4 h-4" />
+                  검색
+                </button>
+              </div>
+            </div>
           </div>
+          {selectedProduct && (
+            <p className="text-sm text-green-600 mt-2">
+              ✓ 상품 선택 완료 - 필수 고지사항이 광고 내용에 자동 추가되었습니다.
+            </p>
+          )}
+        </div>
+
+        {/* Sector Essential Check - Hidden but still functional */}
+        <div className="hidden">
+          {fields.map((field) => (
+            <input
+              key={field.label}
+              type="checkbox"
+              checked={sectorFields[field.label] || false}
+              onChange={(e) => handleFieldChange(field.label, e.target.checked)}
+            />
+          ))}
         </div>
 
         {/* Image Upload with AI Auto-Fill */}
@@ -242,6 +323,77 @@ export default function AdInputForm({ sector, onAnalyze, isAnalyzing }: AdInputF
           )}
         </button>
       </form>
+
+      {/* Product Search Modal */}
+      {showProductModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-800">상품 검색</h3>
+              <button
+                onClick={() => {
+                  setShowProductModal(false);
+                  setProductSearchQuery("");
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="p-4 border-b">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={productSearchQuery}
+                  onChange={(e) => setProductSearchQuery(e.target.value)}
+                  placeholder="상품명 또는 상품 코드로 검색..."
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            {/* Product List */}
+            <div className="overflow-y-auto max-h-[50vh]">
+              {filteredProducts.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  검색 결과가 없습니다.
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">상품명</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 w-32">상품 코드</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredProducts.map((product) => (
+                      <tr
+                        key={product.id}
+                        onClick={() => handleProductSelect(product as Product)}
+                        className="hover:bg-blue-50 cursor-pointer transition-colors"
+                      >
+                        <td className="px-4 py-3 text-sm text-gray-800">{product.product_name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600 font-mono">{product.id}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t bg-gray-50 text-sm text-gray-500">
+              총 {filteredProducts.length}개 상품
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
