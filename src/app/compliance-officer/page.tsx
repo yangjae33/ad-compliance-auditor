@@ -65,12 +65,15 @@ export default function ComplianceOfficerPage() {
   const router = useRouter();
   const { drafts, getPendingDraftsCount } = useCompliance();
   const [filterStatus, setFilterStatus] = useState<DraftStatus | "all">("all");
+  const [filterSector, setFilterSector] = useState<Sector | "all">("all");
 
   const pendingCount = getPendingDraftsCount();
 
-  const filteredDrafts = filterStatus === "all" 
-    ? drafts 
-    : drafts.filter(d => d.status === filterStatus);
+  const filteredDrafts = drafts.filter(d => {
+    const statusMatch = filterStatus === "all" || d.status === filterStatus;
+    const sectorMatch = filterSector === "all" || d.sector === filterSector;
+    return statusMatch && sectorMatch;
+  });
 
   const handleDraftClick = (draftId: string) => {
     router.push(`/compliance-officer/${draftId}`);
@@ -201,19 +204,41 @@ export default function ComplianceOfficerPage() {
                 ({filteredDrafts.length}건)
               </span>
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Filter className="w-4 h-4 text-gray-400" />
+              <select
+                value={filterSector}
+                onChange={(e) => setFilterSector(e.target.value as Sector | "all")}
+                className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">전체 그룹사</option>
+                <option value="은행">은행</option>
+                <option value="카드">카드</option>
+                <option value="증권">증권</option>
+                <option value="라이프">라이프</option>
+              </select>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as DraftStatus | "all")}
-                className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">전체</option>
+                <option value="all">전체 상태</option>
                 <option value="pending">검토 대기</option>
                 <option value="approved">승인됨</option>
                 <option value="rejected">반려됨</option>
                 <option value="review_requested">수정 요청</option>
               </select>
+              {(filterStatus !== "all" || filterSector !== "all") && (
+                <button
+                  onClick={() => {
+                    setFilterStatus("all");
+                    setFilterSector("all");
+                  }}
+                  className="text-xs text-gray-500 hover:text-gray-700 underline"
+                >
+                  필터 초기화
+                </button>
+              )}
             </div>
           </div>
 
@@ -240,7 +265,7 @@ export default function ComplianceOfficerPage() {
                             {status.icon}
                             {status.label}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                             {sectorIcons[draft.sector]}
                             {draft.sector}
                           </span>
@@ -274,7 +299,7 @@ export default function ComplianceOfficerPage() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-gray-500 mt-8">
-          <p>Blue Pen v1.0 - 준법감시인 모드</p>
+          <p>SOLens v1.0 - 준법감시인 모드</p>
         </footer>
       </div>
     </main>

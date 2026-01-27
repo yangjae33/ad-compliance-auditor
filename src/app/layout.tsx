@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Blue Pen",
+  title: "SOLens",
   description: "AI 기반 금융 광고 컴플라이언스 검사 시스템",
 };
 
