@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 아래 두 옵션을 추가하면, 변수 안 쓴 거나 타입 에러가 있어도 무조건 배포됩니다.
+  // 에러 무시 설정
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -9,4 +9,6 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig; // mjs라면 export default nextConfig;
+// ❌ 기존 (에러 원인): module.exports = nextConfig;
+// ✅ 수정 (정답):
+export default nextConfig;
