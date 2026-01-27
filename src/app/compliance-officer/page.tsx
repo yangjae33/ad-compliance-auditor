@@ -23,7 +23,7 @@ import {
 import { useCompliance } from "@/stores/ComplianceContext";
 import { DraftDocument, DraftStatus, Sector } from "@/data/mockData";
 
-const sectorIcons: Record<Sector, React.ReactNode> = {
+const sectorIcons: Record<string, React.ReactNode> = {
   Bank: <Building2 className="w-4 h-4" />,
   Card: <CreditCard className="w-4 h-4" />,
   Investment: <TrendingUp className="w-4 h-4" />,
