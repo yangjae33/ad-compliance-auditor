@@ -328,19 +328,20 @@ export default function ComplianceOfficerPage() {
               <div className="bg-purple-600 p-2 rounded-lg">
                 <Scale className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">준법감시인 대시보드</h1>
-                <p className="text-sm text-gray-500">기안 문서 검토 및 승인 관리</p>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 truncate">준법감시인 대시보드</h1>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">기안 문서 검토 및 승인 관리</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               {pendingCount > 0 && (
-                <div className="bg-red-100 text-red-700 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {pendingCount}건 검토 대기
+                <div className="bg-red-100 text-red-700 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">{pendingCount}건 검토 대기</span>
+                  <span className="sm:hidden">{pendingCount}</span>
                 </div>
               )}
-              <div className="bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1 rounded-full">
+              <div className="bg-purple-100 text-purple-700 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
                 준법감시인
               </div>
             </div>
@@ -350,52 +351,52 @@ export default function ComplianceOfficerPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
           <div 
-            className="bg-white rounded-xl p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
+            className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setFilterStatus("consumer_approved")}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">검토 대기</p>
-                <p className="text-2xl font-bold text-blue-600">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">검토 대기</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">
                   {drafts.filter(d => d.status === "consumer_approved").length}
                 </p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Clock className="w-6 h-6 text-blue-600" />
+              <div className="bg-blue-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
             </div>
           </div>
           <div 
-            className="bg-white rounded-xl p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
+            className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setFilterStatus("approved")}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">승인됨</p>
-                <p className="text-2xl font-bold text-green-600">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">승인됨</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">
                   {drafts.filter(d => d.status === "approved").length}
                 </p>
               </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="bg-green-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
             </div>
           </div>
           <div 
-            className="bg-white rounded-xl p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
+            className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setFilterStatus("rejected")}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">반려됨</p>
-                <p className="text-2xl font-bold text-red-600">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">반려됨</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-600">
                   {drafts.filter(d => d.status === "rejected").length}
                 </p>
               </div>
-              <div className="bg-red-100 p-3 rounded-lg">
-                <XCircle className="w-6 h-6 text-red-600" />
+              <div className="bg-red-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
               </div>
             </div>
           </div>
@@ -405,48 +406,101 @@ export default function ComplianceOfficerPage() {
           {/* Draft List */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm border">
-              <div className="p-4 border-b flex items-center justify-between">
+              <div className="p-3 sm:p-4 border-b">
+                {/* 모바일: 두 줄 레이아웃 */}
+                <div className="sm:hidden space-y-2">
+                  {/* 타이틀 행 */}
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-semibold text-gray-800 flex items-center gap-2 text-sm">
+                      <FileText className="w-4 h-4" />
+                      기안 문서 목록
+                      <span className="text-xs font-normal text-gray-500">
+                        ({filteredDrafts.length}건)
+                      </span>
+                    </h2>
+                    {(filterStatus !== "all" || filterSector !== "all") && (
+                      <button
+                        onClick={() => {
+                          setFilterStatus("all");
+                          setFilterSector("all");
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700 underline"
+                      >
+                        초기화
+                      </button>
+                    )}
+                  </div>
+                  {/* 필터 행 */}
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                    <select
+                      value={filterSector}
+                      onChange={(e) => setFilterSector(e.target.value as Sector | "all")}
+                      className="text-xs border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent flex-1 min-w-0"
+                    >
+                      <option value="all">전체 그룹사</option>
+                      <option value="은행">은행</option>
+                      <option value="카드">카드</option>
+                      <option value="증권">증권</option>
+                      <option value="라이프">라이프</option>
+                    </select>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value as DraftStatus | "all")}
+                      className="text-xs border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent flex-1 min-w-0"
+                    >
+                      <option value="all">전체 상태</option>
+                      <option value="consumer_approved">검토 대기</option>
+                      <option value="approved">승인됨</option>
+                      <option value="rejected">반려됨</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* 데스크탑: 한 줄 레이아웃 */}
+                <div className="hidden sm:flex sm:items-center sm:justify-between">
                 <h2 className="font-semibold text-gray-800 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   기안 문서 목록
-                  <span className="text-sm font-normal text-gray-500">
-                    ({filteredDrafts.length}건)
-                  </span>
+                    <span className="text-sm font-normal text-gray-500">
+                      ({filteredDrafts.length}건)
+                    </span>
                 </h2>
-                <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-gray-400" />
-                  <select
-                    value={filterSector}
-                    onChange={(e) => setFilterSector(e.target.value as Sector | "all")}
-                    className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="all">전체 그룹사</option>
-                    <option value="은행">은행</option>
-                    <option value="카드">카드</option>
-                    <option value="증권">증권</option>
-                    <option value="라이프">라이프</option>
-                  </select>
+                  <div className="flex items-center gap-3">
+                    <Filter className="w-4 h-4 text-gray-600" />
+                    <select
+                      value={filterSector}
+                      onChange={(e) => setFilterSector(e.target.value as Sector | "all")}
+                      className="text-sm border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="all">전체 그룹사</option>
+                      <option value="은행">은행</option>
+                      <option value="카드">카드</option>
+                      <option value="증권">증권</option>
+                      <option value="라이프">라이프</option>
+                    </select>
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value as DraftStatus | "all")}
-                    className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="text-sm border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
-                    <option value="all">전체 상태</option>
-                    <option value="consumer_approved">검토 대기</option>
+                      <option value="all">전체 상태</option>
+                      <option value="consumer_approved">검토 대기</option>
                     <option value="approved">승인됨</option>
                     <option value="rejected">반려됨</option>
                   </select>
-                  {(filterStatus !== "all" || filterSector !== "all") && (
-                    <button
-                      onClick={() => {
-                        setFilterStatus("all");
-                        setFilterSector("all");
-                      }}
-                      className="text-xs text-gray-500 hover:text-gray-700 underline"
-                    >
-                      필터 초기화
-                    </button>
-                  )}
+                    {(filterStatus !== "all" || filterSector !== "all") && (
+                      <button
+                        onClick={() => {
+                          setFilterStatus("all");
+                          setFilterSector("all");
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700 underline"
+                      >
+                        필터 초기화
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -640,19 +694,19 @@ export default function ComplianceOfficerPage() {
                       <div className="bg-red-50 rounded-lg p-3 border border-red-100">
                         <ul className="text-xs text-red-600 space-y-1">
                           {selectedDraft.analysisResult.violations.slice(0, 3).map((v, i) => (
-                            <li key={i}>• {v}</li>
-                          ))}
+                          <li key={i}>• {v}</li>
+                        ))}
                           {selectedDraft.analysisResult.violations.length > 3 && (
                             <li className="text-red-400">외 {selectedDraft.analysisResult.violations.length - 3}건</li>
                           )}
-                        </ul>
+                      </ul>
                       </div>
                     </div>
                   )}
 
                   {/* Suggestions */}
                   {selectedDraft.analysisResult.suggestions.length > 0 && (
-                    <div>
+                  <div>
                       <h4 className="text-sm font-medium text-blue-600 mb-1">권고사항</h4>
                       <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
                         <ul className="text-xs text-blue-600 space-y-1">
@@ -664,12 +718,12 @@ export default function ComplianceOfficerPage() {
                           )}
                         </ul>
                       </div>
-                    </div>
+                  </div>
                   )}
 
                   {/* Checklist Summary - Bank Sector */}
                   {isBankSector && showChecklist && (
-                    <div>
+                  <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-1">점검표 요약</h4>
                       <div className="flex items-center gap-3 text-xs mb-2">
                         <span className="flex items-center gap-1 text-green-600">
@@ -712,7 +766,7 @@ export default function ComplianceOfficerPage() {
                       {selectedDraft.reviewedBy && (
                         <p className="text-xs text-purple-400 mt-1">- {selectedDraft.reviewedBy}</p>
                       )}
-                    </div>
+                  </div>
                   )}
 
                   {/* Review Comment Input - Only for consumer_approved status */}
