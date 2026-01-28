@@ -615,30 +615,36 @@ export default function DrafterPage() {
       {/* Progress Steps */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         {currentStep !== "submitted" && (
-          <div className="flex items-center justify-between mb-8">
-            {steps.map((step, index) => (
-              <div key={step.key} className="flex items-center">
-                <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                    index <= currentStepIndex
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  {index + 1}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => (
+                <div key={step.key} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex items-center">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                        index <= currentStepIndex
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-500"
+                      }`}
+                    >
+                      {index + 1}
+                    </div>
+                    <span
+                      className={`ml-2 text-sm hidden sm:inline ${
+                        index <= currentStepIndex ? "text-blue-600 font-medium" : "text-gray-500"
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className="flex-1 mx-2 sm:mx-4">
+                      <div className={`h-0.5 ${index < currentStepIndex ? "bg-blue-600" : "bg-gray-200"}`}></div>
+                    </div>
+                  )}
                 </div>
-                <span
-                  className={`ml-2 text-sm hidden sm:inline ${
-                    index <= currentStepIndex ? "text-blue-600 font-medium" : "text-gray-500"
-                  }`}
-                >
-                  {step.label}
-                </span>
-                {index < steps.length - 1 && (
-                  <ArrowRight className="w-4 h-4 mx-4 text-gray-300" />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
