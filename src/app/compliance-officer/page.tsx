@@ -685,20 +685,19 @@ export default function ComplianceOfficerPage() {
                         </span>
                       </div>
                       {checklistSummary.inappropriate > 0 && (
-                        <div className="p-2 bg-red-50 rounded-lg border border-red-100">
-                          <p className="text-xs font-medium text-red-700 mb-1">부적정 항목:</p>
-                          <ul className="text-xs text-red-600 space-y-0.5">
+                        <div className="p-2 bg-red-50 rounded-lg border border-red-100 max-h-40 overflow-y-auto">
+                          <p className="text-xs font-medium text-red-700 mb-1">부적정 항목 ({checklistSummary.inappropriate}건):</p>
+                          <ul className="text-xs text-red-600 space-y-1">
                             {checklistReview.items
                               .filter(item => item.result === "부적정")
-                              .slice(0, 2)
                               .map((item, i) => (
-                                <li key={i} className="truncate">• {item.checkPoint}</li>
+                                <li key={i} className="flex flex-col">
+                                  <span className="font-medium">• {item.checkPoint}</span>
+                                  {item.comment && (
+                                    <span className="ml-3 text-red-500 text-xs">{item.comment}</span>
+                                  )}
+                                </li>
                               ))}
-                            {checklistReview.items.filter(item => item.result === "부적정").length > 2 && (
-                              <li className="text-red-400">
-                                외 {checklistReview.items.filter(item => item.result === "부적정").length - 2}건
-                              </li>
-                            )}
                           </ul>
                         </div>
                       )}
