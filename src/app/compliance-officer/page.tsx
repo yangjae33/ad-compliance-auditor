@@ -99,6 +99,10 @@ export default function ComplianceOfficerPage() {
   const [aiSummary, setAiSummary] = useState<string>("");
   const [isAIReviewing, setIsAIReviewing] = useState(false);
   const [aiReviewCompleted, setAiReviewCompleted] = useState(false);
+  
+  // 사전심사필 번호 팝업 관련 상태
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalNumber, setApprovalNumber] = useState("");
 
   // 준법감시인 검토 대기 건수 (consumer_approved 상태)
   const pendingCount = getComplianceOfficerPendingCount();
@@ -201,6 +205,14 @@ export default function ComplianceOfficerPage() {
     }));
   };
 
+  // 사전심사필 번호 생성 함수
+  const generateApprovalNumber = () => {
+    const year = new Date().getFullYear();
+    const randomNum = Math.floor(10000 + Math.random() * 90000); // 5자리 랜덤 숫자
+    const subNum = Math.floor(1 + Math.random() * 9); // 1-9 사이 숫자
+    return `준법감시인 사전심사필 제${year}-${randomNum}-${subNum}호`;
+  };
+
   const handleApprove = async () => {
     if (!selectedDraft) return;
     
@@ -221,13 +233,23 @@ export default function ComplianceOfficerPage() {
     setIsProcessing(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // 사전심사필 번호 생성
+    const generatedNumber = generateApprovalNumber();
+    setApprovalNumber(generatedNumber);
+    
     // 체크리스트 결과를 코멘트에 포함
     const checklistNote = selectedDraft.sector === "은행" 
       ? `\n[체크리스트] 적정: ${checklistSummary.appropriate}, 부적정: ${checklistSummary.inappropriate}, 해당없음: ${checklistSummary.notApplicable}`
       : "";
     
-    updateDraftStatus(selectedDraft.id, "approved", "준법감시인", (reviewComment || "승인 완료") + checklistNote);
+    updateDraftStatus(selectedDraft.id, "approved", "준법감시인", (reviewComment || "승인 완료") + checklistNote, generatedNumber);
     setIsProcessing(false);
+    setShowApprovalModal(true);
+  };
+  
+  const handleCloseApprovalModal = () => {
+    setShowApprovalModal(false);
+    setApprovalNumber("");
     setSelectedDraft(null);
   };
 
@@ -743,11 +765,20 @@ export default function ComplianceOfficerPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 border-t">
+                  <div className="p-4 border-t space-y-3">
                     <div className={`py-3 px-4 rounded-lg text-center font-medium flex items-center justify-center gap-2 ${statusConfig[selectedDraft.status].bgColor} ${statusConfig[selectedDraft.status].color}`}>
                       {statusConfig[selectedDraft.status].icon}
                       {statusConfig[selectedDraft.status].label}
                     </div>
+                    {/* 승인된 건의 사전심사필 번호 표시 */}
+                    {selectedDraft.status === "approved" && selectedDraft.approvalNumber && (
+                      <div className="bg-green-50 rounded-xl p-3 border border-green-200">
+                        <p className="text-xs text-green-600 text-center mb-1">사전심사필 번호</p>
+                        <p className="text-sm font-bold text-green-800 text-center break-keep">
+                          {selectedDraft.approvalNumber}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -766,6 +797,49 @@ export default function ComplianceOfficerPage() {
           <p>SOLens v1.0 - 준법감시인 모드</p>
         </footer>
       </div>
+
+      {/* 사전심사필 번호 채번 완료 모달 */}
+      {showApprovalModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* 모달 헤더 */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-center">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-xl font-bold text-white">승인 완료</h2>
+              <p className="text-green-100 text-sm mt-1">사전심사필 번호가 채번되었습니다</p>
+            </div>
+            
+            {/* 모달 본문 */}
+            <div className="p-6">
+              <div className="bg-gray-50 rounded-xl p-4 border-2 border-dashed border-gray-200">
+                <p className="text-xs text-gray-500 text-center mb-2">사전심사필 번호</p>
+                <p className="text-lg font-bold text-gray-800 text-center break-keep">
+                  {approvalNumber}
+                </p>
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-600 text-center">
+                  💡 해당 번호는 광고물에 표기되어야 합니다.
+                </p>
+              </div>
+            </div>
+            
+            {/* 모달 푸터 */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={handleCloseApprovalModal}
+                style={{ backgroundColor: '#0046ff' }}
+                className="w-full py-3 text-white rounded-xl font-medium hover:opacity-90 transition-all shadow-sm"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
