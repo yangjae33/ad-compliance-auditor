@@ -25,7 +25,7 @@ export default function DrafterPage() {
   const { addDraft } = useCompliance();
   
   const [currentStep, setCurrentStep] = useState<Step>("sector");
-  const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
+  const [selectedSectors, setSelectedSectors] = useState<Sector[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [adData, setAdData] = useState<AdFormData | null>(null);
@@ -33,12 +33,22 @@ export default function DrafterPage() {
   const [showGuideline, setShowGuideline] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
 
+  // 여러 그룹사 선택 토글
   const handleSectorSelect = (sector: Sector) => {
-    setSelectedSector(sector);
+    setSelectedSectors(prev => {
+      if (prev.includes(sector)) {
+        return prev.filter(s => s !== sector);
+      } else {
+        return [...prev, sector];
+      }
+    });
   };
+  
+  // 대표 그룹사 (첫 번째 선택된 그룹사)
+  const primarySector = selectedSectors.length > 0 ? selectedSectors[0] : null;
 
   const handleProceedToInput = () => {
-    if (selectedSector) {
+    if (selectedSectors.length > 0) {
       setCurrentStep("input");
     }
   };
@@ -49,8 +59,9 @@ export default function DrafterPage() {
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const regulation = REGULATIONS.find((r) => r.sector === selectedSector);
-    const guideline = selectedSector ? SECTOR_GUIDELINES[selectedSector] : null;
+    // 선택된 모든 그룹사의 규정과 가이드라인을 합침
+    const regulations = REGULATIONS.filter((r) => selectedSectors.includes(r.sector));
+    const guidelines = selectedSectors.map(s => SECTOR_GUIDELINES[s]).filter(Boolean);
     const violations: string[] = [];
     const suggestions: string[] = [];
     let matchedHistory = null;
@@ -134,13 +145,16 @@ export default function DrafterPage() {
       });
     };
 
-    // 기존 규정 기반 검사
-    if (regulation) {
+    // 기존 규정 기반 검사 (모든 선택된 그룹사에 대해)
+    regulations.forEach((regulation) => {
       regulation.keywords.forEach((keyword) => {
         if (contentLower.includes(keyword.toLowerCase())) {
           // 허용된 문맥인지 확인
           if (!isInAllowedContext(keyword, fullContent)) {
-            violations.push(`금지 키워드 발견: "${keyword}"`);
+            const violationMsg = `[${regulation.sector}] 금지 키워드 발견: "${keyword}"`;
+            if (!violations.includes(violationMsg)) {
+              violations.push(violationMsg);
+            }
           }
         }
       });
@@ -164,20 +178,32 @@ export default function DrafterPage() {
             }
           });
           if (!hasDepositProtection && !data.sectorFields[req]) {
-            suggestions.push(`필수 포함 사항 누락: "${req}"`);
+            const suggestionMsg = `[${regulation.sector}] 필수 포함 사항 누락: "${req}"`;
+            if (!suggestions.includes(suggestionMsg)) {
+              suggestions.push(suggestionMsg);
+            }
           }
         } else if (!data.sectorFields[req] && !contentLower.includes(req.toLowerCase())) {
-          suggestions.push(`필수 포함 사항 누락: "${req}"`);
+          const suggestionMsg = `[${regulation.sector}] 필수 포함 사항 누락: "${req}"`;
+          if (!suggestions.includes(suggestionMsg)) {
+            suggestions.push(suggestionMsg);
+          }
         }
       });
 
-      if (violations.length > 0) {
-        suggestions.push(regulation.suggestion);
+      if (violations.filter(v => v.startsWith(`[${regulation.sector}]`)).length > 0) {
+        if (!suggestions.includes(regulation.suggestion)) {
+          suggestions.push(regulation.suggestion);
+        }
       }
-    }
+    });
 
-    // 그룹사별 가이드라인 기반 금지 표현 검사
-    if (guideline) {
+    // 그룹사별 가이드라인 기반 금지 표현 검사 (모든 선택된 그룹사에 대해)
+    guidelines.forEach((guideline) => {
+      if (!guideline) return;
+      
+      const sectorName = selectedSectors.find(s => SECTOR_GUIDELINES[s] === guideline) || "";
+      
       guideline.prohibitedExpressions.forEach((expr) => {
         try {
           const regex = new RegExp(expr.pattern, "gi");
@@ -185,8 +211,11 @@ export default function DrafterPage() {
           if (match) {
             // 허용된 문맥인지 확인 후 위반 처리
             if (!isInAllowedContext(match[0], fullContent)) {
-              violations.push(`금지 표현 발견: "${match[0]}" - ${expr.description}`);
-              suggestions.push(`💡 권장: ${expr.suggestion}`);
+              const violationMsg = `[${sectorName}] 금지 표현 발견: "${match[0]}" - ${expr.description}`;
+              if (!violations.includes(violationMsg)) {
+                violations.push(violationMsg);
+                suggestions.push(`💡 [${sectorName}] 권장: ${expr.suggestion}`);
+              }
             }
           }
         } catch {
@@ -194,8 +223,11 @@ export default function DrafterPage() {
           const simplePattern = expr.pattern.replace(/\\/g, "").replace(/\./g, "").replace(/\{.*?\}/g, "").replace(/\|/g, " ");
           if (contentLower.includes(simplePattern.toLowerCase())) {
             if (!isInAllowedContext(simplePattern, fullContent)) {
-              violations.push(`금지 표현 발견: "${simplePattern}" - ${expr.description}`);
-              suggestions.push(`💡 권장: ${expr.suggestion}`);
+              const violationMsg = `[${sectorName}] 금지 표현 발견: "${simplePattern}" - ${expr.description}`;
+              if (!violations.includes(violationMsg)) {
+                violations.push(violationMsg);
+                suggestions.push(`💡 [${sectorName}] 권장: ${expr.suggestion}`);
+              }
             }
           }
         }
@@ -219,7 +251,10 @@ export default function DrafterPage() {
           const matchRatio = coreKeywords.length > 0 ? matchCount / coreKeywords.length : 0;
 
           if (matchRatio < 0.6) {
-            suggestions.push(`필수 문구 권장: "${stmt.content.substring(0, 50)}..."`);
+            const suggestionMsg = `[${sectorName}] 필수 문구 권장: "${stmt.content.substring(0, 50)}..."`;
+            if (!suggestions.includes(suggestionMsg)) {
+              suggestions.push(suggestionMsg);
+            }
           }
         }
       });
@@ -279,10 +314,13 @@ export default function DrafterPage() {
         });
 
         if (!hasRelatedContent) {
-          suggestions.push(`체크리스트 확인 필요: ${checkItem.item}`);
+          const suggestionMsg = `[${sectorName}] 체크리스트 확인 필요: ${checkItem.item}`;
+          if (!suggestions.includes(suggestionMsg)) {
+            suggestions.push(suggestionMsg);
+          }
         }
       });
-    }
+    });
 
     // 과거 이력 매칭
     const historyMatch = HISTORY_RAG.find((history) => {
@@ -361,15 +399,20 @@ export default function DrafterPage() {
       riskLevel = violations.length > 0 ? "High" : "Low";
       correctedContent = data.content;
 
-      // 금지 키워드 처리
-      if (regulation && violations.length > 0) {
-        regulation.keywords.forEach((keyword) => {
-          const regex = new RegExp(keyword, "gi");
-          correctedContent = correctedContent?.replace(regex, "[수정 필요]");
-        });
-        correctedContent += `\n\n※ ${regulation.suggestion}`;
-      }
-      if (guideline) {
+      // 금지 키워드 처리 (모든 선택된 그룹사에 대해)
+      regulations.forEach((regulation) => {
+        if (violations.filter(v => v.startsWith(`[${regulation.sector}]`)).length > 0) {
+          regulation.keywords.forEach((keyword) => {
+            const regex = new RegExp(keyword, "gi");
+            correctedContent = correctedContent?.replace(regex, "[수정 필요]");
+          });
+          if (!correctedContent?.includes(regulation.suggestion)) {
+            correctedContent += `\n\n※ [${regulation.sector}] ${regulation.suggestion}`;
+          }
+        }
+      });
+      guidelines.forEach((guideline) => {
+        if (!guideline) return;
         guideline.prohibitedExpressions.forEach((expr) => {
           try {
             const regex = new RegExp(expr.pattern, "gi");
@@ -378,7 +421,7 @@ export default function DrafterPage() {
             // 정규식 오류 시 무시
           }
         });
-      }
+      });
 
       // AI 제안: 유사 상품 기준 누락 필드 추가
       if (missingFields.length > 0) {
@@ -452,7 +495,7 @@ export default function DrafterPage() {
   };
 
   const handleSubmitDraft = async () => {
-    if (!adData || !analysisResult || !selectedSector || !recipientEmail) return;
+    if (!adData || !analysisResult || !primarySector || !recipientEmail) return;
 
     setIsSubmitting(true);
 
@@ -475,7 +518,7 @@ export default function DrafterPage() {
           score: analysisResult.status === "Approved" ? 100 : analysisResult.status === "AutoCorrected" ? 70 : 30,
           feedback: analysisResult.suggestions.join("\n") || "검토가 완료되었습니다.",
           adTitle: adData.title,
-          sector: selectedSector,
+          sector: selectedSectors.join(", "),
         }),
       });
 
@@ -484,12 +527,13 @@ export default function DrafterPage() {
 
       // Add draft to local state (이미지 포함)
       // 최초 상태는 "pending" (소비자보호부 검토 대기)
+      // 대표 그룹사(첫 번째 선택된 그룹사)로 저장
       const draftId = addDraft({
         title: adData.title,
         content: adData.content,
         correctedContent: analysisResult.correctedContent,
         imageUrl, // 이미지 URL 추가
-        sector: selectedSector,
+        sector: primarySector,
         status: "pending", // 소비자보호부 검토 대기 상태로 시작
         analysisResult,
         createdBy: "현재 사용자",
@@ -508,7 +552,7 @@ export default function DrafterPage() {
 
   const handleReset = () => {
     setCurrentStep("sector");
-    setSelectedSector(null);
+    setSelectedSectors([]);
     setAnalysisResult(null);
     setAdData(null);
     setSubmittedDraftId(null);
@@ -546,7 +590,7 @@ export default function DrafterPage() {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {selectedSector && currentStep !== "submitted" && (
+              {selectedSectors.length > 0 && currentStep !== "submitted" && (
                 <button
                   onClick={() => setShowGuideline(!showGuideline)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
@@ -604,10 +648,10 @@ export default function DrafterPage() {
           {currentStep === "sector" && (
             <div className="space-y-6">
               <SectorSelector
-                selectedSector={selectedSector}
+                selectedSectors={selectedSectors}
                 onSelectSector={handleSectorSelect}
               />
-              {selectedSector && (
+              {selectedSectors.length > 0 && (
                 <button
                   onClick={handleProceedToInput}
                   className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
@@ -619,7 +663,7 @@ export default function DrafterPage() {
             </div>
           )}
 
-          {currentStep === "input" && selectedSector && (
+          {currentStep === "input" && primarySector && (
             <div className="space-y-4">
               <button
                 onClick={handleGoBack}
@@ -628,8 +672,19 @@ export default function DrafterPage() {
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 <span className="text-sm">그룹사 선택으로 돌아가기</span>
               </button>
+              {/* 선택된 그룹사 표시 */}
+              {selectedSectors.length > 1 && (
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-700">
+                    <span className="font-medium">적용 그룹사:</span> {selectedSectors.join(", ")}
+                    <span className="ml-2 text-blue-600">
+                      ({selectedSectors.length}개 그룹사의 규정이 통합 적용됩니다)
+                    </span>
+                  </p>
+                </div>
+              )}
               <AdInputForm
-                sector={selectedSector}
+                sector={primarySector}
                 onAnalyze={analyzeAd}
                 isAnalyzing={isAnalyzing}
                 initialData={adData}
@@ -646,7 +701,7 @@ export default function DrafterPage() {
             />
           )}
 
-          {currentStep === "report" && analysisResult && selectedSector && adData && (
+          {currentStep === "report" && analysisResult && primarySector && adData && (
             <div className="space-y-6">
               <button
                 onClick={handleGoBack}
@@ -657,7 +712,7 @@ export default function DrafterPage() {
               </button>
               <ComplianceReport
                 result={analysisResult}
-                sector={selectedSector}
+                sector={primarySector}
                 adTitle={adData.title}
                 adContent={adData.content}
                 onReset={handleReset}
@@ -749,12 +804,14 @@ export default function DrafterPage() {
           )}
           </div>
 
-          {/* Guideline Panel */}
-          {showGuideline && selectedSector && currentStep !== "submitted" && (
-            <div className="w-96 flex-shrink-0">
-              <div className="sticky top-4">
-                <SectorGuidelinePanel sector={selectedSector} />
-              </div>
+          {/* Guideline Panel - 여러 그룹사 선택 시 모든 가이드라인 표시 */}
+          {showGuideline && selectedSectors.length > 0 && currentStep !== "submitted" && (
+            <div className="w-96 flex-shrink-0 space-y-4">
+              {selectedSectors.map((sector) => (
+                <div key={sector} className="sticky top-4">
+                  <SectorGuidelinePanel sector={sector} />
+                </div>
+              ))}
             </div>
           )}
         </div>
