@@ -642,9 +642,9 @@ export default function DrafterPage() {
         )}
 
         {/* Main Content with Guideline Panel */}
-        <div className={`flex gap-6 ${showGuideline && selectedSector ? "" : ""}`}>
+        <div className={`flex gap-6 ${showGuideline && selectedSectors.length > 0 ? "" : ""}`}>
           {/* Main Content */}
-          <div className={`bg-white rounded-xl shadow-lg p-6 md:p-8 ${showGuideline && selectedSector ? "flex-1" : "w-full"}`}>
+          <div className={`bg-white rounded-xl shadow-lg p-6 md:p-8 ${showGuideline && selectedSectors.length > 0 ? "flex-1" : "w-full"}`}>
           {currentStep === "sector" && (
             <div className="space-y-6">
               <SectorSelector
