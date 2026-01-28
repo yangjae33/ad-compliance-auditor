@@ -65,6 +65,7 @@ export interface DraftDocument {
   reviewComment?: string;
   sectorFields: Record<string, boolean>;
   consumerChecklist?: ConsumerChecklistResult; // 소비자 보호 체크리스트 결과
+  approvalNumber?: string; // 준법감시인 사전심사필 번호
 }
 
 export interface Regulation {

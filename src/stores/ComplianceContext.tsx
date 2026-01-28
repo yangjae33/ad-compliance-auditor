@@ -11,7 +11,7 @@ interface ComplianceContextType {
   // 기안 문서 관리
   drafts: DraftDocument[];
   addDraft: (draft: Omit<DraftDocument, "id" | "createdAt" | "updatedAt">) => string;
-  updateDraftStatus: (id: string, status: DraftStatus, reviewedBy?: string, reviewComment?: string) => void;
+  updateDraftStatus: (id: string, status: DraftStatus, reviewedBy?: string, reviewComment?: string, approvalNumber?: string) => void;
   getDraftById: (id: string) => DraftDocument | undefined;
   getDraftsByStatus: (status: DraftStatus) => DraftDocument[];
   getPendingDraftsCount: () => number;
@@ -96,6 +96,7 @@ const INITIAL_DRAFTS: DraftDocument[] = [
       terms: true,
       comparison: true,
     },
+    approvalNumber: "준법감시인 사전심사필 제2026-12345-1호",
   },
   {
     id: "draft-004",
@@ -138,7 +139,8 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
     id: string,
     status: DraftStatus,
     reviewedBy?: string,
-    reviewComment?: string
+    reviewComment?: string,
+    approvalNumber?: string
   ) => {
     setDrafts((prev) =>
       prev.map((draft) =>
@@ -148,6 +150,7 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
               status,
               reviewedBy,
               reviewComment,
+              approvalNumber: approvalNumber || draft.approvalNumber,
               updatedAt: new Date(),
             }
           : draft
