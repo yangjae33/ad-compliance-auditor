@@ -193,12 +193,12 @@ export default function ConsumerProtectionPage() {
               <div className="bg-teal-600 p-2 rounded-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">소비자보호부 대시보드</h1>
-                <p className="text-sm text-gray-500">소비자 보호 내부통제 검토</p>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 truncate">소비자보호부 대시보드</h1>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">소비자 보호 내부통제 검토</p>
               </div>
             </div>
-            <div className="bg-teal-100 text-teal-700 text-sm font-medium px-3 py-1 rounded-full">
+            <div className="bg-teal-100 text-teal-700 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0">
               소비자보호부
             </div>
           </div>
@@ -278,47 +278,102 @@ export default function ConsumerProtectionPage() {
           {/* Draft List */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm border">
-              <div className="p-4 border-b flex items-center justify-between">
-                <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  광고 기안 목록
-                </h2>
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-400" />
-                  <select
-                    value={filterSector}
-                    onChange={(e) => setFilterSector(e.target.value as Sector | "all")}
-                    className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">전체 그룹사</option>
-                    <option value="은행">은행</option>
-                    <option value="카드">카드</option>
-                    <option value="증권">증권</option>
-                    <option value="라이프">라이프</option>
-                  </select>
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value as DraftStatus | "all")}
-                    className="text-sm border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="all">전체</option>
-                    <option value="pending">소비자보호부 검토 대기</option>
-                    <option value="consumer_approved">소비자보호부 승인</option>
-                    <option value="approved">최종 승인</option>
-                    <option value="rejected">반려됨</option>
-                    <option value="review_requested">수정 요청</option>
-                  </select>
-                  {(filterStatus !== "all" || filterSector !== "all") && (
-                    <button
-                      onClick={() => {
-                        setFilterStatus("all");
-                        setFilterSector("all");
-                      }}
-                      className="text-xs text-gray-500 hover:text-gray-700 underline"
+              <div className="p-3 sm:p-4 border-b">
+                {/* 모바일: 두 줄 레이아웃 */}
+                <div className="sm:hidden space-y-2">
+                  {/* 타이틀 행 */}
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-semibold text-gray-800 flex items-center gap-2 text-sm">
+                      <FileText className="w-4 h-4" />
+                      광고 기안 목록
+                      <span className="text-xs font-normal text-gray-500">
+                        ({filteredDrafts.length}건)
+                      </span>
+                    </h2>
+                    {(filterStatus !== "all" || filterSector !== "all") && (
+                      <button
+                        onClick={() => {
+                          setFilterStatus("all");
+                          setFilterSector("all");
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700 underline"
+                      >
+                        초기화
+                      </button>
+                    )}
+                  </div>
+                  {/* 필터 행 */}
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                    <select
+                      value={filterSector}
+                      onChange={(e) => setFilterSector(e.target.value as Sector | "all")}
+                      className="text-xs border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-teal-500 focus:border-transparent flex-1 min-w-0"
                     >
-                      필터 초기화
-                    </button>
-                  )}
+                      <option value="all">전체 그룹사</option>
+                      <option value="은행">은행</option>
+                      <option value="카드">카드</option>
+                      <option value="증권">증권</option>
+                      <option value="라이프">라이프</option>
+                    </select>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value as DraftStatus | "all")}
+                      className="text-xs border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-teal-500 focus:border-transparent flex-1 min-w-0"
+                    >
+                      <option value="all">전체 상태</option>
+                      <option value="pending">검토 대기</option>
+                      <option value="consumer_approved">승인</option>
+                      <option value="approved">최종 승인</option>
+                      <option value="rejected">반려됨</option>
+                      <option value="review_requested">수정 요청</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* 데스크탑: 한 줄 레이아웃 */}
+                <div className="hidden sm:flex sm:items-center sm:justify-between">
+                  <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    광고 기안 목록
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-gray-600" />
+                    <select
+                      value={filterSector}
+                      onChange={(e) => setFilterSector(e.target.value as Sector | "all")}
+                      className="text-sm border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    >
+                      <option value="all">전체 그룹사</option>
+                      <option value="은행">은행</option>
+                      <option value="카드">카드</option>
+                      <option value="증권">증권</option>
+                      <option value="라이프">라이프</option>
+                    </select>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value as DraftStatus | "all")}
+                      className="text-sm border border-gray-300 bg-gray-50 text-gray-900 font-medium rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    >
+                      <option value="all">전체</option>
+                      <option value="pending">소비자보호부 검토 대기</option>
+                      <option value="consumer_approved">소비자보호부 승인</option>
+                      <option value="approved">최종 승인</option>
+                      <option value="rejected">반려됨</option>
+                      <option value="review_requested">수정 요청</option>
+                    </select>
+                    {(filterStatus !== "all" || filterSector !== "all") && (
+                      <button
+                        onClick={() => {
+                          setFilterStatus("all");
+                          setFilterSector("all");
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700 underline"
+                      >
+                        필터 초기화
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -572,39 +572,40 @@ export default function DrafterPage() {
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
               <button
                 onClick={() => router.push("/")}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
               </button>
-              <div className="bg-blue-600 p-2 rounded-lg">
-                <FileEdit className="w-6 h-6 text-white" />
+              <div className="bg-blue-600 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
+                <FileEdit className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">광고 심의 기안</h1>
-                <p className="text-sm text-gray-500">광고 컴플라이언스 검사 및 기안 제출</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm sm:text-lg md:text-xl font-bold text-gray-800 truncate">광고 심의 기안</h1>
+                <p className="text-xs text-gray-500 truncate hidden sm:block">광고 컴플라이언스 검사 및 기안 제출</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
               {selectedSectors.length > 0 && currentStep !== "submitted" && (
                 <button
                   onClick={() => setShowGuideline(!showGuideline)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center justify-center p-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors ${
                     showGuideline
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   <BookOpen className="w-4 h-4" />
-                  <span className="text-sm font-medium">가이드라인</span>
+                  <span className="text-xs sm:text-sm font-medium hidden sm:inline ml-2">가이드라인</span>
                 </button>
               )}
-              <div className="bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full">
-                광고 심의 기안자
+              <div className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">
+                <span className="hidden sm:inline">광고 심의 기안자</span>
+                <span className="sm:hidden">기안자</span>
               </div>
             </div>
           </div>
