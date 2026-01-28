@@ -20,7 +20,7 @@ export const PERSONAS: Persona[] = [
   {
     type: "consumer_protection",
     label: "소비자보호부",
-    description: "소비자 관점에서 광고를 검토하고 승인합니다",
+    description: "소비자 보호 내부통제 관점에서 광고를 검토하고 승인합니다",
     color: "teal",
   },
   {
@@ -39,12 +39,22 @@ export const PERSONAS: Persona[] = [
 // review_requested: 수정 요청
 export type DraftStatus = "pending" | "consumer_approved" | "approved" | "rejected" | "review_requested";
 
+// 소비자 보호 체크리스트 결과
+export interface ConsumerChecklistResult {
+  clarity: boolean;       // 광고 내용이 명확하고 이해하기 쉬운가?
+  misleading: boolean;    // 소비자를 오인하게 할 수 있는 표현이 없는가?
+  risk_disclosure: boolean; // 위험 고지가 충분히 되어 있는가?
+  terms: boolean;         // 이용 조건이 명확히 표시되어 있는가?
+  comparison: boolean;    // 비교 광고의 경우 공정한 비교인가?
+}
+
 // 기안 문서 인터페이스
 export interface DraftDocument {
   id: string;
   title: string;
   content: string;
   correctedContent?: string;
+  imageUrl?: string; // 광고 이미지 (base64 또는 URL)
   sector: Sector;
   status: DraftStatus;
   analysisResult: AnalysisResult;
@@ -54,6 +64,7 @@ export interface DraftDocument {
   reviewedBy?: string;
   reviewComment?: string;
   sectorFields: Record<string, boolean>;
+  consumerChecklist?: ConsumerChecklistResult; // 소비자 보호 체크리스트 결과
 }
 
 export interface Regulation {

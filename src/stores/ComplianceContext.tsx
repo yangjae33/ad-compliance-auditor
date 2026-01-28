@@ -60,8 +60,15 @@ const INITIAL_DRAFTS: DraftDocument[] = [
     updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
     createdBy: "이기안",
     reviewedBy: "박소보",
-    reviewComment: "소비자보호 관점에서 검토 완료. 준법감시인 검토 요청.",
+    reviewComment: "소비자보호 관점에서 검토 완료. 준법감시인 검토 요청.\n[소비자보호 체크리스트] 5/5 항목 충족 (100%)",
     sectorFields: { "연회비 정보 포함": true, "혜택 조건 명시": false },
+    consumerChecklist: {
+      clarity: true,
+      misleading: true,
+      risk_disclosure: true,
+      terms: true,
+      comparison: true,
+    },
   },
   {
     id: "draft-003",
@@ -80,8 +87,15 @@ const INITIAL_DRAFTS: DraftDocument[] = [
     updatedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
     createdBy: "박기안",
     reviewedBy: "최준법",
-    reviewComment: "규정 준수 확인. 승인합니다.",
+    reviewComment: "규정 준수 확인. 승인합니다.\n[소비자보호 체크리스트] 5/5 항목 충족 (100%)",
     sectorFields: { "투자 위험 고지 포함": true, "원금손실 가능성 명시": true },
+    consumerChecklist: {
+      clarity: true,
+      misleading: true,
+      risk_disclosure: true,
+      terms: true,
+      comparison: true,
+    },
   },
   {
     id: "draft-004",

@@ -439,12 +439,30 @@ export default function DrafterPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 이미지 파일을 base64로 변환하는 함수
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSubmitDraft = async () => {
     if (!adData || !analysisResult || !selectedSector || !recipientEmail) return;
 
     setIsSubmitting(true);
 
     try {
+      // 이미지가 있으면 base64로 변환
+      let imageUrl: string | undefined;
+      if (adData.imageFile) {
+        imageUrl = await convertImageToBase64(adData.imageFile);
+      }
+
       // Send email notification to the recipient
       const emailResponse = await fetch("/api/agent/email", {
         method: "POST",
@@ -464,13 +482,15 @@ export default function DrafterPage() {
       const emailResult = await emailResponse.json();
       console.log("Email sent:", emailResult);
 
-      // Add draft to local state
+      // Add draft to local state (이미지 포함)
+      // 최초 상태는 "pending" (소비자보호부 검토 대기)
       const draftId = addDraft({
         title: adData.title,
         content: adData.content,
         correctedContent: analysisResult.correctedContent,
+        imageUrl, // 이미지 URL 추가
         sector: selectedSector,
-        status: "consumer_approved",
+        status: "pending", // 소비자보호부 검토 대기 상태로 시작
         analysisResult,
         createdBy: "현재 사용자",
         sectorFields: adData.sectorFields,
