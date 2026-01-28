@@ -139,7 +139,7 @@ export default function Home() {
               </div>
               <div>
                 <p className="font-medium text-slate-300">소비자보호부</p>
-                <p className="text-slate-500 mt-1">소비자 관점에서 광고를 검토하고 1차 승인 결정을 내립니다.</p>
+                <p className="text-slate-500 mt-1">소비자 보호 내부통제 관점에서 광고를 검토하고 1차 승인 결정을 내립니다.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
